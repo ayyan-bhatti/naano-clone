@@ -1,0 +1,134 @@
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------------------
+   Vouch design tokens.
+
+   Derived from the Naano teardown (see REVERSE_ENGINEERING.md): near-white
+   ground, white cards, hairline borders, one confident blue, green for money,
+   amber for in-review, uppercase letterspaced micro-labels over large numerals.
+   The palette and the atmospheric band are our own - deliberately not Naano's
+   sky-blue clouds.
+--------------------------------------------------------------------------- */
+@theme {
+  /* Neutrals - very slightly warm slate, so it does not read as default Tailwind */
+  --color-ground: #f6f7f9;
+  --color-surface: #ffffff;
+  --color-sunken: #f1f3f7;
+  --color-line: #e5e8ef;
+  --color-line-strong: #d3d8e3;
+
+  --color-ink: #0d1220;
+  --color-ink-soft: #47506a;
+  --color-ink-muted: #7b849c;
+  --color-ink-faint: #9aa3b8;
+
+  /* Primary - deep indigo-leaning blue */
+  --color-brand-50: #eef2ff;
+  --color-brand-100: #dfe6ff;
+  --color-brand-200: #c3d0ff;
+  --color-brand-300: #9db2ff;
+  --color-brand-500: #3f63e8;
+  --color-brand-600: #2f4fd8;
+  --color-brand-700: #2540b4;
+  --color-brand-900: #1a2a6d;
+
+  /* Signals */
+  --color-money: #0b8f5f;
+  --color-money-soft: #e6f6ef;
+  --color-warn: #a5620a;
+  --color-warn-soft: #fdf1dc;
+  --color-danger: #b4232a;
+  --color-danger-soft: #fdeaea;
+  --color-live: #6d28d9;
+  --color-live-soft: #f1eafe;
+
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --radius-card: 16px;
+  --radius-control: 10px;
+
+  --shadow-card: 0 1px 2px rgb(13 18 32 / 0.04), 0 1px 3px rgb(13 18 32 / 0.03);
+  --shadow-lift: 0 8px 24px -6px rgb(13 18 32 / 0.10), 0 2px 6px rgb(13 18 32 / 0.05);
+  --shadow-pop: 0 16px 48px -12px rgb(13 18 32 / 0.18);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-line);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-ground);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Stats and money must never shift width while animating. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
+  }
+
+  /* Visible, consistent focus ring across the whole app. */
+  :focus-visible {
+    outline: 2px solid var(--color-brand-600);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: var(--color-brand-100);
+    color: var(--color-brand-900);
+  }
+}
+
+@layer components {
+  /* The uppercase letterspaced label that sits above every metric. */
+  .micro-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-ink-muted);
+  }
+
+  /* Our signature atmospheric band - a soft aurora mesh rather than clouds. */
+  .aurora {
+    background-image:
+      radial-gradient(80% 120% at 15% 0%, rgb(63 99 232 / 0.16) 0%, transparent 55%),
+      radial-gradient(70% 110% at 85% 10%, rgb(109 40 217 / 0.12) 0%, transparent 55%),
+      radial-gradient(60% 100% at 50% 100%, rgb(11 143 95 / 0.08) 0%, transparent 60%);
+  }
+
+  .card-band {
+    background-image:
+      radial-gradient(120% 160% at 20% 0%, rgb(63 99 232 / 0.20) 0%, transparent 60%),
+      radial-gradient(100% 140% at 90% 20%, rgb(109 40 217 / 0.14) 0%, transparent 60%);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Motion. Every reveal/count-up in the app is gated on this query too (see
+   lib/hooks/use-reveal.ts), so reduced-motion users get final state instantly
+   rather than a degraded animation.
+--------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
