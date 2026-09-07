@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Search, SlidersHorizontal, Users, X } from 'lucide-react';
 
 import { formatEur } from '@/lib/format';
@@ -14,7 +14,7 @@ import { CreatorCard } from '@/components/creator-card';
 import { SiteFooter, SiteNav } from '@/components/marketing/site-chrome';
 import { Button } from '@/components/ui/button';
 import { Checkbox, Input, Select } from '@/components/ui/field';
-import { CreatorCardSkeleton, EmptyState, useToast } from '@/components/ui/feedback';
+import { EmptyState, useToast } from '@/components/ui/feedback';
 import type { Creator } from '@/lib/types';
 
 /**
@@ -117,14 +117,6 @@ function MarketplaceBody({
   const [onlyAvailable, setOnlyAvailable] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const [filtersOpen, setFiltersOpen] = useState(false);
-
-  // Genuine first-paint loading state rather than a fake delay: we render
-  // skeletons until the client has mounted and scoring has run.
-  const [ready, setReady] = useState(false);
-  useEffect(() => {
-    const t = window.setTimeout(() => setReady(true), 220);
-    return () => window.clearTimeout(t);
-  }, []);
 
   const scored = useMemo(
     () => CREATORS.map((c) => ({ creator: c, score: matchScoreOnly(c, profile) })),
@@ -298,13 +290,7 @@ function MarketplaceBody({
             )}
           </div>
 
-          {!ready ? (
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <CreatorCardSkeleton key={i} />
-              ))}
-            </div>
-          ) : results.length === 0 ? (
+          {results.length === 0 ? (
             <EmptyState
               icon={Search}
               title="No creators match those filters"
