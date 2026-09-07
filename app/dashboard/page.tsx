@@ -19,6 +19,7 @@ import { getCreator } from '@/lib/data/creators';
 import { aggregateMetrics, campaignMetrics, trendDelta } from '@/lib/metrics';
 import { useStore } from '@/lib/store';
 import { AppShell, RequireAuth } from '@/components/app-shell';
+import { CreatorOverview } from '@/components/creator/creator-screens';
 import { StatCard } from '@/components/stat-card';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -37,9 +38,23 @@ import type { DailyPoint } from '@/lib/types';
 export default function DashboardPage() {
   return (
     <RequireAuth>
-      <DashboardInner />
+      <DashboardRouter />
     </RequireAuth>
   );
+}
+
+/** The two sides get different dashboards, not one with hidden sections. */
+function DashboardRouter() {
+  const { user } = useStore();
+  if (user?.role === 'creator') {
+    const firstName = user.name.split(' ')[0];
+    return (
+      <AppShell title={`Welcome back, ${firstName}`} subtitle="Your collaborations and earnings">
+        <CreatorOverview />
+      </AppShell>
+    );
+  }
+  return <DashboardInner />;
 }
 
 function DashboardInner() {

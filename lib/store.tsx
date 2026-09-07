@@ -95,6 +95,24 @@ function demoNotifications(): Notification[] {
   ];
 }
 
+/**
+ * Creators who already have collaborations in the seeded campaigns. A creator
+ * signing up is mapped onto one of these so their dashboard has real deals.
+ */
+const CREATOR_PERSONAS = Array.from(
+  new Set(SEED_CAMPAIGNS.flatMap((c) => c.collaborations.map((col) => col.creatorId))),
+);
+
+function pickCreatorPersona(email: string) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < email.length; i += 1) {
+    h ^= email.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  const id = CREATOR_PERSONAS[(h >>> 0) % CREATOR_PERSONAS.length];
+  return getCreator(id) ?? CREATORS[0];
+}
+
 function emptyState(): PersistedState {
   return {
     version: STATE_VERSION,
@@ -201,7 +219,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const signUp = useCallback<StoreValue['signUp']>(
     ({ name, email, company, role }) => {
-      const creator = role === 'creator' ? CREATORS[0] : undefined;
+      // A creator account is linked to a real marketplace profile, chosen
+      // deterministically from those that already appear in seeded campaigns -
+      // otherwise a new creator would land on an empty dashboard with no deals
+      // to accept, which is the one screen that matters on their side.
+      const creator = role === 'creator' ? pickCreatorPersona(email) : undefined;
       update(() => ({
         version: STATE_VERSION,
         user: {
@@ -216,11 +238,27 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           buyerProfile: { vertical: '', personas: [], topics: [], markets: [] },
           creatorId: creator?.id,
         },
-        // A brand-new account starts genuinely empty. The empty states are part
-        // of the product, and hiding them behind seed data would be a lie.
-        campaigns: [],
+        // A brand-new brand account starts genuinely empty - the empty states
+        // are part of the product and hiding them behind seed data would be a
+        // lie. A creator account instead carries the campaigns that already
+        // invited them, because inbound deals are not something they create.
+        campaigns: creator
+          ? SEED_CAMPAIGNS.filter((c) => c.collaborations.some((col) => col.creatorId === creator.id))
+          : [],
         shortlist: [],
-        notifications: [],
+        notifications: creator
+          ? [
+              {
+                id: 'n-invite',
+                kind: 'collaboration',
+                title: 'You have a new collaboration request',
+                body: `${DEMO_COMPANY} invited you to a sponsored post.`,
+                createdAt: new Date().toISOString(),
+                read: false,
+                href: '/deals',
+              },
+            ]
+          : [],
       }));
     },
     [update],

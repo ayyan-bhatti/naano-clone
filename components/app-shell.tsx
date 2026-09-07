@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import {
   Bell,
   ChevronDown,
+  Handshake,
   LayoutGrid,
   LogOut,
   Menu,
@@ -19,6 +20,7 @@ import {
 import { cn } from '@/lib/cn';
 import { relativeTime } from '@/lib/format';
 import { useStore } from '@/lib/store';
+import type { Role } from '@/lib/types';
 import { Logo } from '@/components/brand';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -32,11 +34,20 @@ import { Button } from '@/components/ui/button';
  * squeezed desktop sidebar is the thing the brief explicitly warns against.
  */
 
-const NAV = [
+const BRAND_NAV = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid },
   { href: '/marketplace', label: 'Marketplace', icon: Store },
   { href: '/campaigns', label: 'Campaigns', icon: Target },
   { href: '/payouts', label: 'Payouts', icon: Wallet },
+  { href: '/settings', label: 'Settings', icon: Settings },
+];
+
+/** The two sides of the marketplace get different surfaces, not the same nav. */
+const CREATOR_NAV = [
+  { href: '/dashboard', label: 'Overview', icon: LayoutGrid },
+  { href: '/deals', label: 'Deals', icon: Handshake },
+  { href: '/earnings', label: 'Earnings', icon: Wallet },
+  { href: '/marketplace', label: 'Marketplace', icon: Store },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
@@ -53,7 +64,8 @@ export function AppShell({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { notifications, signOut, markAllNotificationsRead, hydrated } = useStore();
+  const { user, notifications, signOut, markAllNotificationsRead, hydrated } = useStore();
+  const role: Role = user?.role ?? 'brand';
   const [mobileOpen, setMobileOpen] = useState(false);
   const [bellOpen, setBellOpen] = useState(false);
 
@@ -70,7 +82,7 @@ export function AppShell({
             <Logo />
           </Link>
         </div>
-        <SidebarNav pathname={pathname} />
+        <SidebarNav pathname={pathname} role={role} />
         <UserBlock onSignOut={() => { signOut(); router.push('/'); }} />
       </aside>
 
@@ -89,7 +101,7 @@ export function AppShell({
                 <X className="size-4" />
               </button>
             </div>
-            <SidebarNav pathname={pathname} />
+            <SidebarNav pathname={pathname} role={role} />
             <UserBlock onSignOut={() => { signOut(); router.push('/'); }} />
           </aside>
           <style>{`@keyframes slide-in{from{transform:translateX(-100%)}to{transform:none}}`}</style>
@@ -182,10 +194,11 @@ export function AppShell({
   );
 }
 
-function SidebarNav({ pathname }: { pathname: string }) {
+function SidebarNav({ pathname, role }: { pathname: string; role: Role }) {
+  const items = role === 'creator' ? CREATOR_NAV : BRAND_NAV;
   return (
     <nav aria-label="Primary" className="flex-1 space-y-0.5 px-3 py-2">
-      {NAV.map((item) => {
+      {items.map((item) => {
         const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
         return (
           <Link
@@ -282,4 +295,4 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-export { NAV as APP_NAV };
+export { BRAND_NAV, CREATOR_NAV };
