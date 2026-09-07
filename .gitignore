@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+.next/
+out/
+build/
+dist/
+
+# Environment - never commit secrets
+.env
+.env*.local
+.env.local
+.env.development.local
+.env.production.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+
+# Vercel / typescript
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+
+# Capture hook internal dedup state (not part of the log record itself)
+.agent-logs/.state-*.json
+
+# NOTE: .agent-logs/ is deliberately NOT ignored. The prompt/response record
+# ships with this repo as part of the 8x submission.
