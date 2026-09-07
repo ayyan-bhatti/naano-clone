@@ -12,8 +12,20 @@ const jakarta = Plus_Jakarta_Sans({
   weight: ['400', '500', '600', '700', '800'],
 });
 
+/**
+ * Absolute base for OG/social URLs. VERCEL_URL is injected by Vercel itself at
+ * build time - there is nothing to configure in the dashboard - so previews and
+ * production each resolve to their own hostname, and local dev falls back to
+ * localhost rather than pointing social tags at a domain that may not exist.
+ */
+const siteUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  : process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : 'http://localhost:3000';
+
 export const metadata: Metadata = {
-  metadataBase: new URL('https://vouch-demo.vercel.app'),
+  metadataBase: new URL(siteUrl),
   title: {
     default: 'Vouch — the B2B creator marketplace',
     template: '%s · Vouch',
