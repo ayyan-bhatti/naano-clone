@@ -250,11 +250,20 @@ function main() {
   }
 
   if (MODE === 'response') {
-    const { text, uuid } = finalResponse(records);
+    // The Stop payload carries the final assistant text directly, which is the
+    // documented source and survives an unreadable transcript. The transcript
+    // join is still preferred when it is strictly richer, because Claude Code
+    // splits one visible reply across several text blocks around tool calls
+    // and `last_assistant_message` holds only the last of them.
+    const direct = typeof payload.last_assistant_message === 'string' ? payload.last_assistant_message.trim() : '';
+    const { text: joined, uuid } = finalResponse(records);
+    const text = joined.length >= direct.length ? joined : direct;
     if (!text.trim()) return;
-    if (alreadyLogged(logDir, sessionId, uuid)) return;
+
+    const key = payload.prompt_id || uuid;
+    if (alreadyLogged(logDir, sessionId, key)) return;
     appendEntry(file, 'RESPONSE', sessionId, model, text);
-    markLogged(logDir, sessionId, uuid);
+    markLogged(logDir, sessionId, key);
   }
 }
 
