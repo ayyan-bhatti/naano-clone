@@ -89,24 +89,24 @@ export default function SignInPage() {
       mood={crowd.mood}
       peekProgress={crowd.peekProgress}
       eyebrow="Welcome back"
-      statement={
-        <>
-          Your creators
-          <br />
-          have been busy.
-        </>
+      statement="Your creators have been busy."
+      footer={
+        <p className="text-[13px] text-white/50">
+          No account?{' '}
+          <Link href="/sign-up" className="font-medium text-white hover:underline">
+            Create one
+          </Link>
+        </p>
       }
-      substatement="Impressions, clicks and pipeline have kept moving while you were away. They will look away for your password."
     >
-      <h1 className="text-[28px] font-extrabold tracking-[-0.035em] text-ink">Sign in</h1>
-      <p className="mt-2 text-[14px] text-ink-soft">
+      <p className="text-[14px] text-ink-soft">
         Demo authentication — your session is stored in this browser.
       </p>
 
       {/* Demo entry, deliberately above the form */}
       <button
         onClick={openDemo}
-        className="group mt-6 flex w-full items-start gap-4 rounded-[14px] border border-brand-300 bg-brand-50/60 p-4 text-left transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-brand-500 hover:shadow-lift active:translate-y-0"
+        className="group mt-5 flex w-full items-start gap-4 rounded-[14px] border border-brand-300 bg-brand-50/60 p-4 text-left transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-brand-500 hover:shadow-lift active:translate-y-0"
       >
         <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-brand-600 text-white">
           <Sparkles className="size-5" />
@@ -180,13 +180,6 @@ export default function SignInPage() {
           Sign in
         </Button>
       </form>
-
-      <p className="mt-6 text-center text-[13px] text-ink-muted">
-        No account?{' '}
-        <Link href="/sign-up" className="font-medium text-brand-600 hover:underline">
-          Create one
-        </Link>
-      </p>
     </AuthLayout>
   );
 }

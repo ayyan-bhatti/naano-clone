@@ -43,10 +43,20 @@ interface Face {
   peeker: boolean;
 }
 
-const VIEW_W = 640;
-const VIEW_H = 860;
-const COLS = 9;
+const VIEW_W = 1440;
+const VIEW_H = 900;
+const COLS = 16;
 const ROWS = 11;
+
+/** Where the form sits, and therefore where every gaze converges. */
+const FOCUS_X = VIEW_W / 2;
+const FOCUS_Y = VIEW_H / 2;
+
+/**
+ * Radius of the clearing kept free of faces so the centred form is not sitting
+ * on top of anybody. Expressed as a fraction of the half-diagonal.
+ */
+const CLEARING = 0.42;
 
 function hash(n: number): number {
   let h = (n + 0x9e3779b9) >>> 0;
@@ -55,10 +65,19 @@ function hash(n: number): number {
   return ((h ^ (h >>> 16)) >>> 0) / 0xffffffff;
 }
 
-/** Deterministic layout so server and client render identically. */
+/**
+ * Deterministic layout so server and client render identically.
+ *
+ * A staggered grid with the middle cleared, so the crowd forms a ring around the
+ * centred form rather than sitting behind it. Faces that land inside the
+ * clearing are dropped instead of being shoved outward - pushing them creates a
+ * visible pile-up along the boundary that reads as a rendering bug.
+ */
 function buildFaces(): Face[] {
   const faces: Face[] = [];
   let id = 0;
+
+  const halfDiag = Math.hypot(VIEW_W / 2, VIEW_H / 2);
 
   for (let row = 0; row < ROWS; row += 1) {
     for (let col = 0; col < COLS; col += 1) {
@@ -69,21 +88,29 @@ function buildFaces(): Face[] {
 
       // Back rows sit higher and smaller: a crowd receding into the distance.
       const depth = row / (ROWS - 1);
-      const jitterX = (a - 0.5) * 38;
-      const jitterY = (b - 0.5) * 24;
+      const jitterX = (a - 0.5) * 46;
+      const jitterY = (b - 0.5) * 30;
 
       // Stagger alternate rows so it reads as a crowd, not a grid.
       const offset = row % 2 === 0 ? 0 : VIEW_W / COLS / 2;
 
+      const x = (col + 0.5) * (VIEW_W / COLS) + offset + jitterX;
+      const y = 60 + row * ((VIEW_H - 120) / (ROWS - 1)) + jitterY;
+
+      // Keep the middle clear for the form. The boundary is jittered per face so
+      // the edge of the crowd is ragged rather than a perfect circle.
+      const distance = Math.hypot(x - FOCUS_X, y - FOCUS_Y) / halfDiag;
+      if (distance < CLEARING + (c - 0.5) * 0.09) continue;
+
       faces.push({
         id: id++,
-        x: (col + 0.5) * (VIEW_W / COLS) + offset + jitterX,
-        y: 70 + row * ((VIEW_H - 140) / (ROWS - 1)) + jitterY,
-        r: 11 + depth * 13,
+        x,
+        y,
+        r: 10 + depth * 12,
         depth,
         hue: 215 + c * 85, // indigo -> violet
         phase: a * Math.PI * 2,
-        peeker: c > 0.82,
+        peeker: c > 0.8,
       });
     }
   }
@@ -180,9 +207,11 @@ export function WatchingCrowd({
           targetOpen = 0;
           targetTurn = -1;
         } else if (currentMood === 'watching' || peeking) {
-          // Look at the form, which sits off the right edge of the panel.
-          const dx = VIEW_W * 1.1 - face.x;
-          const dy = VIEW_H * 0.45 - face.y;
+          // Look at the form in the middle of the screen. Everyone converging on
+          // one point is the whole effect - if the target drifts off-canvas the
+          // gazes go parallel and it stops reading as "being watched".
+          const dx = FOCUS_X - face.x;
+          const dy = FOCUS_Y - face.y;
           const len = Math.hypot(dx, dy) || 1;
           targetX = dx / len;
           targetY = dy / len;
@@ -251,9 +280,15 @@ export function WatchingCrowd({
       preserveAspectRatio="xMidYMid slice"
     >
       <defs>
-        <radialGradient id="crowd-fade" cx="50%" cy="42%" r="72%">
-          <stop offset="55%" stopColor="white" stopOpacity="1" />
-          <stop offset="100%" stopColor="white" stopOpacity="0" />
+        {/*
+          Donut mask: soft on the inside so the crowd dissolves as it approaches
+          the form, soft on the outside so it does not end at a hard edge.
+        */}
+        <radialGradient id="crowd-fade" cx="50%" cy="50%" r="72%">
+          <stop offset="28%" stopColor="black" />
+          <stop offset="46%" stopColor="white" />
+          <stop offset="86%" stopColor="white" />
+          <stop offset="100%" stopColor="black" />
         </radialGradient>
         <mask id="crowd-mask">
           <rect width={VIEW_W} height={VIEW_H} fill="url(#crowd-fade)" />

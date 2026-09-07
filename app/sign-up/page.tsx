@@ -103,24 +103,35 @@ export default function SignUpPage() {
     <AuthLayout
       mood={crowd.mood}
       peekProgress={crowd.peekProgress}
-      eyebrow="2,400 vetted creators"
+      eyebrow="2,400 creators are watching"
       statement={
-        <>
-          The people your buyers
-          <br />
-          already listen to.
-        </>
+        role === null
+          ? 'Create your account'
+          : role === 'brand'
+            ? 'Set up your brand account'
+            : 'Set up your creator account'
       }
-      substatement="They are watching you fill this in. They will look away when you get to the password — most of them, anyway."
+      footer={
+        role === null ? (
+          <p className="text-[13px] text-white/50">
+            Already have an account?{' '}
+            <Link href="/sign-in" className="font-medium text-white hover:underline">
+              Sign in
+            </Link>
+          </p>
+        ) : (
+          <p className="mx-auto max-w-[380px] text-[12px] leading-relaxed text-white/40">
+            Your password is hashed with SHA-256 before it is stored, and never leaves this browser.
+            It is still a demo, not real authentication.
+          </p>
+        )
+      }
     >
       {!role ? (
         <div>
-          <h1 className="text-[28px] font-extrabold tracking-[-0.035em] text-ink">
-            Create your account
-          </h1>
-          <p className="mt-2 text-[14px] text-ink-soft">First, who are you here as?</p>
+          <p className="text-[14px] text-ink-soft">First, who are you here as?</p>
 
-          <div className="mt-7 space-y-3">
+          <div className="mt-5 space-y-3">
             {ROLES.map((r) => (
               <button
                 key={r.role}
@@ -143,31 +154,18 @@ export default function SignUpPage() {
             ))}
           </div>
 
-          <p className="mt-7 text-center text-[13px] text-ink-muted">
-            Already have an account?{' '}
-            <Link href="/sign-in" className="font-medium text-brand-600 hover:underline">
-              Sign in
-            </Link>
-          </p>
         </div>
       ) : (
         <div>
           <button
             onClick={() => setRole(null)}
-            className="mb-5 inline-flex items-center gap-1.5 text-[13px] font-medium text-ink-muted transition-colors hover:text-ink"
+            className="mb-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-ink-muted transition-colors hover:text-ink"
           >
             <ArrowLeft className="size-3.5" />
             Change role
           </button>
 
-          <h1 className="text-[28px] font-extrabold tracking-[-0.035em] text-ink">
-            {role === 'brand' ? 'Set up your brand account' : 'Set up your creator account'}
-          </h1>
-          <p className="mt-2 text-[14px] text-ink-soft">
-            Demo account — everything stays in this browser.
-          </p>
-
-          <form onSubmit={onSubmit} noValidate className="mt-6 space-y-4">
+          <form onSubmit={onSubmit} noValidate className="space-y-4">
             <Field label="Full name" error={errors.name} required>
               {({ id, describedBy, invalid }) => (
                 <Input
@@ -267,11 +265,6 @@ export default function SignUpPage() {
               <ArrowRight className="size-4" />
             </Button>
           </form>
-
-          <p className="mt-5 text-center text-[12px] leading-relaxed text-ink-faint">
-            Your password is hashed with SHA-256 before it is stored. It never leaves this browser —
-            and this is still a demo, not real authentication.
-          </p>
         </div>
       )}
     </AuthLayout>
