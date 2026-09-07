@@ -162,6 +162,8 @@ export interface User {
   companyDomain: string;
   avatarSeed: string;
   onboarded: boolean;
+  /** SHA-256 of the demo password. See lib/auth.ts - not real authentication. */
+  passwordHash?: string;
   buyerProfile: BuyerProfile;
   /** Only set when role === 'creator': links the account to a marketplace profile. */
   creatorId?: string;

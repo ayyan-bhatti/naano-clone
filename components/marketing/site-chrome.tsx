@@ -16,10 +16,11 @@ const LINKS = [
   { href: '#faq', label: 'FAQ' },
 ];
 
-export function SiteNav() {
+export function SiteNav({ tone = 'light' }: { tone?: 'light' | 'dark' } = {}) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { user, hydrated } = useStore();
+  const dark = tone === 'dark' && !scrolled;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -33,11 +34,12 @@ export function SiteNav() {
       className={cn(
         'sticky top-0 z-50 transition-[background-color,border-color,backdrop-filter] duration-200',
         scrolled ? 'border-b border-line bg-surface/80 backdrop-blur-md' : 'border-b border-transparent',
+        dark && 'text-white',
       )}
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         <Link href="/" aria-label="Vouch home">
-          <Logo />
+          <Logo className={dark ? '[&>span:last-child]:text-white' : undefined} />
         </Link>
 
         <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
@@ -45,7 +47,10 @@ export function SiteNav() {
             <a
               key={l.href}
               href={l.href}
-              className="rounded-[8px] px-3 py-2 text-[13px] font-medium text-ink-soft transition-colors hover:bg-sunken hover:text-ink"
+              className={cn(
+                'rounded-[8px] px-3 py-2 text-[13px] font-medium transition-colors',
+                dark ? 'text-white/70 hover:bg-white/10 hover:text-white' : 'text-ink-soft hover:bg-sunken hover:text-ink',
+              )}
             >
               {l.label}
             </a>
@@ -60,7 +65,7 @@ export function SiteNav() {
           ) : (
             <>
               <Link href="/sign-in">
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" className={dark ? 'text-white/80 hover:bg-white/10 hover:text-white' : undefined}>
                   Sign in
                 </Button>
               </Link>
@@ -75,7 +80,7 @@ export function SiteNav() {
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-label={open ? 'Close menu' : 'Open menu'}
-          className="rounded-[8px] p-2 text-ink-soft transition-colors hover:bg-sunken md:hidden"
+          className={cn('rounded-[8px] p-2 transition-colors md:hidden', dark ? 'text-white hover:bg-white/10' : 'text-ink-soft hover:bg-sunken')}
         >
           {open ? <X className="size-5" /> : <Menu className="size-5" />}
         </button>

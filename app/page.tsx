@@ -10,6 +10,7 @@ import {
   FileText,
   Link2,
   Search,
+  TrendingUp,
   Wallet,
 } from 'lucide-react';
 
@@ -81,58 +82,99 @@ export default function LandingPage() {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <SiteNav />
+      <SiteNav tone="dark" />
 
       <main id="main" className="flex-1">
         {/* ---------------- Hero ---------------- */}
-        <section className="aurora relative overflow-hidden">
-          <div className="mx-auto max-w-6xl px-4 pb-20 pt-16 sm:px-6 sm:pb-24 sm:pt-24">
-            <Reveal>
-              <span className="inline-flex items-center gap-2 rounded-full border border-line bg-surface/80 px-3 py-1.5 text-[12px] font-medium text-ink-soft backdrop-blur">
-                <span aria-hidden className="size-1.5 rounded-full bg-money" />
-                Where B2B brands work with creators
-              </span>
-            </Reveal>
+        <section className="relative -mt-16 overflow-hidden bg-[#0a0c17] pt-16">
+          {/* Layered depth: two coloured glows, a masked grid, and a soft floor. */}
+          <div
+            aria-hidden
+            className="absolute inset-0"
+            style={{
+              backgroundImage:
+                'radial-gradient(60% 55% at 12% 0%, rgba(63,99,232,0.32) 0%, transparent 60%),' +
+                'radial-gradient(55% 60% at 92% 20%, rgba(109,40,217,0.26) 0%, transparent 60%),' +
+                'radial-gradient(70% 50% at 50% 108%, rgba(11,143,95,0.16) 0%, transparent 60%)',
+            }}
+          />
+          <div
+            aria-hidden
+            className="absolute inset-0 opacity-[0.16]"
+            style={{
+              backgroundImage:
+                'linear-gradient(rgba(255,255,255,0.12) 1px, transparent 1px),' +
+                'linear-gradient(90deg, rgba(255,255,255,0.12) 1px, transparent 1px)',
+              backgroundSize: '72px 72px',
+              maskImage: 'radial-gradient(80% 70% at 30% 20%, black 0%, transparent 100%)',
+              WebkitMaskImage: 'radial-gradient(80% 70% at 30% 20%, black 0%, transparent 100%)',
+            }}
+          />
 
-            <Reveal delay={60}>
-              <h1 className="mt-5 max-w-3xl text-[38px] font-extrabold leading-[1.05] tracking-[-0.035em] text-ink sm:text-[56px]">
-                The creators your buyers
-                <br className="hidden sm:block" /> already trust.
-              </h1>
-            </Reveal>
+          <div className="relative mx-auto grid max-w-6xl gap-12 px-4 pb-20 pt-14 sm:px-6 sm:pb-24 sm:pt-20 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+            {/* Copy */}
+            <div>
+              <Reveal>
+                <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[12px] font-medium text-white/75 backdrop-blur">
+                  <span aria-hidden className="size-1.5 rounded-full bg-money" />
+                  Where B2B brands work with creators
+                </span>
+              </Reveal>
 
-            <Reveal delay={110}>
-              <p className="mt-5 max-w-xl text-[16px] leading-relaxed text-ink-soft sm:text-[17px]">
-                Find them by audience fit rather than follower count, brief them in minutes, and
-                trace the clicks, leads and pipeline back to every single post.
-              </p>
-            </Reveal>
+              <Reveal delay={60}>
+                <h1 className="mt-5 text-[40px] font-extrabold leading-[1.02] tracking-[-0.04em] text-white sm:text-[58px]">
+                  The creators your
+                  <br />
+                  buyers{' '}
+                  <span className="bg-gradient-to-r from-[#9db2ff] via-[#c4b5fd] to-[#7de3b8] bg-clip-text text-transparent">
+                    already trust.
+                  </span>
+                </h1>
+              </Reveal>
 
-            <Reveal delay={160}>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Link href="/sign-up">
-                  <Button size="lg" className="w-full sm:w-auto">
-                    Launch a campaign
-                    <ArrowRight className="size-4" />
-                  </Button>
-                </Link>
-                <Link href="/marketplace">
-                  <Button size="lg" variant="secondary" className="w-full sm:w-auto">
-                    Browse the marketplace
-                  </Button>
-                </Link>
-              </div>
-            </Reveal>
+              <Reveal delay={110}>
+                <p className="mt-6 max-w-lg text-[16px] leading-relaxed text-white/60 sm:text-[17px]">
+                  Find them by audience fit rather than follower count, brief them in minutes, and
+                  trace the clicks, leads and pipeline back to every single post.
+                </p>
+              </Reveal>
 
-            <Reveal delay={210}>
-              <p className="mt-5 text-[13px] text-ink-muted">
-                Free to browse · Fixed price per post · No card required
-              </p>
-            </Reveal>
+              <Reveal delay={160}>
+                <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+                  <Link href="/sign-up">
+                    <Button size="lg" className="w-full !rounded-full sm:w-auto">
+                      Launch a campaign
+                      <ArrowRight className="size-4" />
+                    </Button>
+                  </Link>
+                  <Link href="/marketplace">
+                    <Button
+                      size="lg"
+                      className="w-full !rounded-full border border-white/20 bg-white/5 text-white hover:bg-white/10 sm:w-auto"
+                    >
+                      Browse the marketplace
+                    </Button>
+                  </Link>
+                </div>
+              </Reveal>
 
-            {/* Headline metrics */}
-            <Reveal delay={260}>
-              <dl className="mt-14 grid grid-cols-2 gap-x-6 gap-y-8 border-t border-line pt-8 sm:grid-cols-4">
+              <Reveal delay={210}>
+                <p className="mt-5 text-[13px] text-white/45">
+                  Free to browse · Fixed price per post · No card required
+                </p>
+              </Reveal>
+            </div>
+
+            {/* Floating product fragments - depth without a screenshot */}
+            <Reveal delay={140}>
+              <HeroStack />
+            </Reveal>
+          </div>
+
+          {/* Headline metrics, on the dark floor */}
+          <div className="relative mx-auto max-w-6xl px-4 pb-16 sm:px-6">
+            <Reveal delay={240}>
+              <dl className="grid grid-cols-2 gap-x-6 gap-y-8 border-t border-white/10 pt-8 sm:grid-cols-4">
                 {[
                   { label: 'Vetted creators', value: 2400, format: 'compact' as const, suffix: '+' },
                   { label: 'Impressions tracked', value: 5_200_000, format: 'compact' as const, suffix: '' },
@@ -140,11 +182,13 @@ export default function LandingPage() {
                   { label: 'Median cost per post', value: 180, format: 'eur' as const, suffix: '' },
                 ].map((m) => (
                   <div key={m.label}>
-                    <dd className="text-[26px] font-bold tracking-[-0.02em] text-ink sm:text-[30px]">
+                    <dd className="text-[26px] font-bold tracking-[-0.02em] text-white sm:text-[30px]">
                       <Counter value={m.value} format={m.format} />
                       {m.suffix}
                     </dd>
-                    <dt className="micro-label mt-1">{m.label}</dt>
+                    <dt className="mt-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/40">
+                      {m.label}
+                    </dt>
                   </div>
                 ))}
               </dl>
@@ -330,6 +374,93 @@ export default function LandingPage() {
       </main>
 
       <SiteFooter />
+    </div>
+  );
+}
+
+/**
+ * The floating fragments beside the hero.
+ *
+ * Three real pieces of the product - a ranked creator, an attributed-pipeline
+ * tile, and a tracked link - arranged with depth rather than one flat
+ * screenshot. Each says something the headline cannot: fit is scored, pipeline
+ * is attributed, every post carries its own link.
+ */
+function HeroStack() {
+  return (
+    <div className="relative mx-auto hidden h-[380px] w-full max-w-[420px] lg:block">
+      {/* Creator match card */}
+      <div className="absolute left-0 top-2 w-[280px] rotate-[-3deg] rounded-[16px] border border-white/12 bg-white/[0.07] p-4 backdrop-blur-md shadow-pop">
+        <div className="flex items-center gap-3">
+          <span
+            className="flex size-10 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold text-white"
+            style={{ backgroundImage: 'linear-gradient(135deg,#3f63e8,#6d28d9)' }}
+          >
+            MF
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-[13.5px] font-semibold text-white">Marta Ferreira</p>
+            <p className="truncate text-[11.5px] text-white/50">RevOps · Sales</p>
+          </div>
+        </div>
+        <div className="mt-3.5 flex items-center justify-between">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.09em] text-white/45">
+            Matching
+          </span>
+          <span className="tabular text-[13px] font-semibold text-white">88/100</span>
+        </div>
+        <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/12">
+          <div className="h-full w-[88%] rounded-full bg-gradient-to-r from-[#3f63e8] to-[#9db2ff]" />
+        </div>
+        <p className="mt-2.5 text-[11px] leading-relaxed text-white/45">
+          70% of this audience is Sales leaders, RevOps and Founders
+        </p>
+      </div>
+
+      {/* Pipeline tile */}
+      <div className="absolute right-0 top-24 w-[230px] rotate-[2.5deg] rounded-[16px] border border-white/12 bg-white/[0.07] p-4 backdrop-blur-md shadow-pop">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.09em] text-white/45">
+          Attributed pipeline
+        </span>
+        <p className="mt-1.5 text-[26px] font-bold tracking-[-0.02em] text-white">€48.2K</p>
+        <div className="mt-2 flex items-center gap-1.5 text-[11.5px] font-medium text-[#7de3b8]">
+          <TrendingUp className="size-3.5" />
+          +24%
+          <span className="font-normal text-white/35">vs first half</span>
+        </div>
+        {/* Tiny inline trend, drawn not imported */}
+        <svg viewBox="0 0 120 32" className="mt-3 h-8 w-full" aria-hidden>
+          <path
+            d="M2 27 L18 24 L34 25 L50 17 L66 19 L82 11 L98 12 L118 4"
+            fill="none"
+            stroke="#7de3b8"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
+
+      {/* Tracked link */}
+      <div className="absolute bottom-2 left-8 w-[262px] rotate-[1.5deg] rounded-[16px] border border-white/12 bg-white/[0.07] p-4 backdrop-blur-md shadow-pop">
+        <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.09em] text-white/45">
+          <Link2 className="size-3" />
+          Tracked link
+        </span>
+        <p className="tabular mt-1.5 text-[13px] font-medium text-white">vouch.link/revo7k2x</p>
+        <div className="mt-3 grid grid-cols-3 gap-2 border-t border-white/10 pt-3">
+          {[
+            ['42.8K', 'Impr.'],
+            ['312', 'Clicks'],
+            ['18', 'Leads'],
+          ].map(([v, l]) => (
+            <div key={l}>
+              <p className="tabular text-[13px] font-semibold text-white">{v}</p>
+              <p className="text-[9.5px] font-semibold uppercase tracking-[0.08em] text-white/40">{l}</p>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from 'react';
 
+import { digestsMatch } from '@/lib/auth';
 import { generateBrief, makeTrackingCode } from '@/lib/brief';
 import { DEMO_COMPANY, DEMO_DOMAIN, SEED_CAMPAIGNS } from '@/lib/data/campaigns';
 import { CREATORS, getCreator } from '@/lib/data/creators';
@@ -168,8 +169,9 @@ export interface NewCampaignInput {
 interface StoreValue extends PersistedState {
   hydrated: boolean;
   // auth
-  signUp: (input: { name: string; email: string; company: string; role: Role }) => void;
-  signIn: (email: string) => boolean;
+  signUp: (input: { name: string; email: string; company: string; role: Role; passwordHash: string }) => void;
+  /** Verifies the stored digest. Returns why it failed so the form can say so. */
+  signIn: (email: string, passwordHash: string) => 'ok' | 'no-account' | 'bad-password';
   signOut: () => void;
   loadDemo: () => void;
   completeOnboarding: (profile: Partial<User['buyerProfile']> & { company?: string }) => void;
@@ -218,7 +220,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   /* ---------------- auth ---------------- */
 
   const signUp = useCallback<StoreValue['signUp']>(
-    ({ name, email, company, role }) => {
+    ({ name, email, company, role, passwordHash }) => {
       // A creator account is linked to a real marketplace profile, chosen
       // deterministically from those that already appear in seeded campaigns -
       // otherwise a new creator would land on an empty dashboard with no deals
@@ -235,6 +237,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           companyDomain: company.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com',
           avatarSeed: email,
           onboarded: false,
+          passwordHash,
           buyerProfile: { vertical: '', personas: [], topics: [], markets: [] },
           creatorId: creator?.id,
         },
@@ -264,27 +267,32 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [update],
   );
 
-  const signIn = useCallback<StoreValue['signIn']>(
-    (email) => {
-      const existing = load();
-      if (existing?.user && existing.user.email.toLowerCase() === email.toLowerCase()) {
-        setState(existing);
-        return true;
+  const signIn = useCallback<StoreValue['signIn']>((email, passwordHash) => {
+    const existing = load();
+
+    if (existing?.user && existing.user.email.toLowerCase() === email.toLowerCase()) {
+      // Accounts created before passwords existed have no digest; let them in
+      // rather than locking someone out of their own demo data.
+      if (existing.user.passwordHash && !digestsMatch(existing.user.passwordHash, passwordHash)) {
+        return 'bad-password';
       }
-      if (email.toLowerCase() === DEMO_USER.email) {
-        setState({
-          version: STATE_VERSION,
-          user: DEMO_USER,
-          campaigns: SEED_CAMPAIGNS,
-          shortlist: ['marta-ferreira', 'tomas-loucky', 'clara-nowak'],
-          notifications: demoNotifications(),
-        });
-        return true;
-      }
-      return false;
-    },
-    [],
-  );
+      setState(existing);
+      return 'ok';
+    }
+
+    if (email.toLowerCase() === DEMO_USER.email) {
+      setState({
+        version: STATE_VERSION,
+        user: DEMO_USER,
+        campaigns: SEED_CAMPAIGNS,
+        shortlist: ['marta-ferreira', 'tomas-loucky', 'clara-nowak'],
+        notifications: demoNotifications(),
+      });
+      return 'ok';
+    }
+
+    return 'no-account';
+  }, []);
 
   const signOut = useCallback(() => {
     update(() => emptyState());

@@ -3,10 +3,12 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, Sparkles } from 'lucide-react';
 
+import { hashPassword } from '@/lib/auth';
 import { DEMO_USER, useStore } from '@/lib/store';
-import { Logo } from '@/components/brand';
+import { AuthLayout } from '@/components/auth/auth-layout';
+import { useCrowdMood } from '@/components/auth/watching-crowd';
 import { Button } from '@/components/ui/button';
 import { Field, Input } from '@/components/ui/field';
 import { useToast } from '@/components/ui/feedback';
@@ -14,39 +16,55 @@ import { useToast } from '@/components/ui/feedback';
 /**
  * Sign-in.
  *
- * The demo workspace button matters more than the form: a reviewer opening the
- * deployed link cold should reach a populated product in one click, not have to
- * invent an account and then stare at empty states.
+ * The demo workspace button sits above the form on purpose: a reviewer opening
+ * the deployed link cold should reach a populated product in one click, not
+ * have to invent an account and then stare at empty states.
  */
 export default function SignInPage() {
   const router = useRouter();
   const { signIn, loadDemo } = useStore();
   const { push } = useToast();
+  const crowd = useCrowdMood();
 
   const [email, setEmail] = useState('');
-  const [error, setError] = useState<string>();
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [submitting, setSubmitting] = useState(false);
 
-  function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(undefined);
+    setErrors({});
 
     if (!email.trim()) {
-      setError('Enter the email you signed up with');
+      setErrors({ email: 'Enter the email you signed up with' });
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
-      setError('That is not a valid email address');
+      setErrors({ email: 'That is not a valid email address' });
+      return;
+    }
+    if (!password) {
+      setErrors({ password: 'Enter your password' });
       return;
     }
 
     setSubmitting(true);
-    const ok = signIn(email.trim());
-    if (!ok) {
+    const result = signIn(email.trim(), await hashPassword(password));
+
+    if (result === 'no-account') {
       setSubmitting(false);
-      setError('No account in this browser with that email. Create one, or open the demo workspace.');
+      setErrors({
+        email: 'No account in this browser with that email. Create one, or open the demo workspace.',
+      });
       return;
     }
+    if (result === 'bad-password') {
+      setSubmitting(false);
+      setErrors({ password: 'That password does not match this account.' });
+      return;
+    }
+
     push({ tone: 'success', title: 'Welcome back' });
     router.push('/dashboard');
   }
@@ -61,76 +79,114 @@ export default function SignInPage() {
     router.push('/dashboard');
   }
 
+  const watch = (kind: 'public' | 'secret') => ({
+    onFocus: () => crowd.onFieldFocus(kind),
+    onBlur: crowd.onFieldBlur,
+  });
+
   return (
-    <div className="aurora flex min-h-dvh flex-col">
-      <header className="mx-auto flex h-16 w-full max-w-6xl items-center px-4 sm:px-6">
-        <Link href="/" aria-label="Vouch home">
-          <Logo />
-        </Link>
-      </header>
+    <AuthLayout
+      mood={crowd.mood}
+      peekProgress={crowd.peekProgress}
+      eyebrow="Welcome back"
+      statement={
+        <>
+          Your creators
+          <br />
+          have been busy.
+        </>
+      }
+      substatement="Impressions, clicks and pipeline have kept moving while you were away. They will look away for your password."
+    >
+      <h1 className="text-[28px] font-extrabold tracking-[-0.035em] text-ink">Sign in</h1>
+      <p className="mt-2 text-[14px] text-ink-soft">
+        Demo authentication — your session is stored in this browser.
+      </p>
 
-      <main id="main" className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10 sm:px-6">
-        <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-ink">Sign in</h1>
-        <p className="mt-2 text-[14px] text-ink-soft">
-          Demo authentication — your session is stored in this browser.
-        </p>
-
-        {/* Demo entry, deliberately above the form */}
-        <button
-          onClick={openDemo}
-          className="group mt-6 flex w-full items-start gap-4 rounded-[14px] border border-brand-300 bg-brand-50/60 p-4 text-left transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-brand-500 hover:shadow-lift"
-        >
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-brand-600 text-white">
-            <Sparkles className="size-5" />
+      {/* Demo entry, deliberately above the form */}
+      <button
+        onClick={openDemo}
+        className="group mt-6 flex w-full items-start gap-4 rounded-[14px] border border-brand-300 bg-brand-50/60 p-4 text-left transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-brand-500 hover:shadow-lift active:translate-y-0"
+      >
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-brand-600 text-white">
+          <Sparkles className="size-5" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[14.5px] font-semibold text-ink">Open the demo workspace</span>
+          <span className="mt-0.5 block text-[13px] leading-relaxed text-ink-soft">
+            Five campaigns already in flight, with real attribution data to click through.
           </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-[14.5px] font-semibold text-ink">Open the demo workspace</span>
-            <span className="mt-0.5 block text-[13px] leading-relaxed text-ink-soft">
-              Five campaigns already in flight, with real attribution data to click through.
-            </span>
-          </span>
-          <ArrowRight className="mt-2 size-4 shrink-0 text-brand-600 transition-transform duration-200 group-hover:translate-x-0.5" />
-        </button>
+        </span>
+        <ArrowRight className="mt-2 size-4 shrink-0 text-brand-600 transition-transform duration-200 group-hover:translate-x-0.5" />
+      </button>
 
-        <div className="my-6 flex items-center gap-3">
-          <span className="h-px flex-1 bg-line" />
-          <span className="text-[12px] text-ink-faint">or sign in</span>
-          <span className="h-px flex-1 bg-line" />
-        </div>
+      <div className="my-6 flex items-center gap-3">
+        <span className="h-px flex-1 bg-line" />
+        <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-faint">or</span>
+        <span className="h-px flex-1 bg-line" />
+      </div>
 
-        <form onSubmit={onSubmit} noValidate className="space-y-4">
-          <Field
-            label="Email"
-            error={error}
-            hint={`Demo account: ${DEMO_USER.email}`}
-            required
-          >
-            {({ id, describedBy, invalid }) => (
+      <form onSubmit={onSubmit} noValidate className="space-y-4">
+        <Field label="Email" error={errors.email} hint={`Demo account: ${DEMO_USER.email}`} required>
+          {({ id, describedBy, invalid }) => (
+            <Input
+              id={id}
+              type="email"
+              aria-describedby={describedBy}
+              invalid={invalid}
+              autoComplete="email"
+              placeholder="you@company.com"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                crowd.onType();
+              }}
+              {...watch('public')}
+            />
+          )}
+        </Field>
+
+        <Field label="Password" error={errors.password} required>
+          {({ id, describedBy, invalid }) => (
+            <div className="relative">
               <Input
                 id={id}
-                type="email"
+                type={showPassword ? 'text' : 'password'}
                 aria-describedby={describedBy}
                 invalid={invalid}
-                autoComplete="email"
-                placeholder="you@company.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="current-password"
+                placeholder="••••••••"
+                className="pr-10"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  crowd.onType();
+                }}
+                {...watch('secret')}
               />
-            )}
-          </Field>
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                className="absolute right-1 top-1/2 -translate-y-1/2 rounded-[8px] p-2 text-ink-faint transition-colors hover:text-ink"
+              >
+                {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              </button>
+            </div>
+          )}
+        </Field>
 
-          <Button type="submit" block size="lg" variant="secondary" loading={submitting}>
-            Sign in
-          </Button>
-        </form>
+        <Button type="submit" block size="lg" variant="secondary" loading={submitting} className="!rounded-full">
+          Sign in
+        </Button>
+      </form>
 
-        <p className="mt-6 text-center text-[13px] text-ink-muted">
-          No account?{' '}
-          <Link href="/sign-up" className="font-medium text-brand-600 hover:underline">
-            Create one
-          </Link>
-        </p>
-      </main>
-    </div>
+      <p className="mt-6 text-center text-[13px] text-ink-muted">
+        No account?{' '}
+        <Link href="/sign-up" className="font-medium text-brand-600 hover:underline">
+          Create one
+        </Link>
+      </p>
+    </AuthLayout>
   );
 }
