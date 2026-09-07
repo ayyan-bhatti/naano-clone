@@ -3,9 +3,8 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
-import { Search, SlidersHorizontal, Star, Users, X } from 'lucide-react';
+import { Search, SlidersHorizontal, Users, X } from 'lucide-react';
 
-import { cn } from '@/lib/cn';
 import { formatEur } from '@/lib/format';
 import { CATEGORIES, COUNTRIES, CREATORS } from '@/lib/data/creators';
 import { matchScoreOnly } from '@/lib/match';

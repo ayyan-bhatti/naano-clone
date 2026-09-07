@@ -9,7 +9,6 @@ import {
   LayoutGrid,
   LogOut,
   Menu,
-  Search,
   Settings,
   Store,
   Target,
@@ -54,7 +53,7 @@ export function AppShell({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, notifications, signOut, markAllNotificationsRead, hydrated } = useStore();
+  const { notifications, signOut, markAllNotificationsRead, hydrated } = useStore();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [bellOpen, setBellOpen] = useState(false);
 
