@@ -34,6 +34,12 @@ const WEIGHTS = {
   quality: 16,
 } as const;
 
+/** "A", "A and B", "A, B and C" - reads as a sentence, not a join. */
+function listSentence(items: string[]): string {
+  if (items.length <= 1) return items[0] ?? '';
+  return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
+}
+
 function overlap(a: string[], b: string[]): string[] {
   const norm = (s: string) => s.toLowerCase().trim();
   const bs = new Set(b.map(norm));
@@ -64,7 +70,7 @@ export function matchScore(creator: Creator, profile: BuyerProfile): MatchResult
     score: personaScore,
     max: WEIGHTS.personas,
     detail: matchedSegments.length
-      ? `${coveredShare}% of this audience is ${matchedSegments.map((s) => s.label).join(' and ')}`
+      ? `${coveredShare}% of this audience is ${listSentence(matchedSegments.map((s) => s.label))}`
       : 'No overlap with your buyer personas',
   });
 
