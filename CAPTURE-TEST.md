@@ -153,3 +153,32 @@ Kept per the guide's instruction to leave dead ends in.
 4. **Initially parsed the transcript for response text without knowing
    `last_assistant_message` existed.** Reading the hooks docs surfaced the documented
    field; the script now prefers whichever source is richer rather than either alone.
+
+5. **The response hook silently stopped logging after the first turn — the worst bug
+   in this setup, and it ran undetected for roughly ten turns.**
+
+   `finalResponse` collected assistant text since the last *user prompt*. That is
+   correct for a conversation, where each prompt gets one reply. It is wrong for
+   autonomous work: the assignment arrives as a single long prompt and the agent then
+   runs many assistant turns under it. So on every `Stop`, the function re-collected
+   the entire session from that one prompt, and the dedup guard — keyed on
+   `prompt_id`, which does not change within a prompt — correctly identified it as
+   already logged and discarded it. Prompts kept being captured; responses stopped
+   dead at 18:02.
+
+   It was invisible precisely because the script is built to fail silently so it can
+   never break a turn. Caught only by running `git log --follow -- .agent-logs`
+   during the wrap-up checks and noticing it listed three commits when it should have
+   listed ten.
+
+   **Fix:** anchor on the last assistant record actually written to the log
+   (`lastResponseUuid` in the state file) rather than on the last user prompt. Each
+   `Stop` now emits exactly the text produced since the previous entry, which is
+   correct for both conversational and autonomous sessions. Response entries are also
+   numbered independently of prompts now, because one prompt legitimately produces
+   many responses here.
+
+   The recovery entry (`RESPONSE num=2`) is a single large block holding the backlog
+   from the turns that went unlogged. It is left as-is rather than split up — the
+   guide says not to tidy the log after the fact, and an honest lumpy record beats a
+   reconstructed neat one.

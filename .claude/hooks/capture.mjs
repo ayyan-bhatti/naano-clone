@@ -81,23 +81,38 @@ function isRealUserPrompt(rec) {
 }
 
 /**
- * The assistant text for the current turn: every text block emitted after the
- * last real user prompt. Claude Code splits a single visible reply across
- * several text blocks when tool calls sit between them, so taking only the
- * last block would silently drop most of the answer.
+ * The assistant text for the turn that just ended.
+ *
+ * Anchored on the last assistant record we already logged, NOT on the last user
+ * prompt. During autonomous work one prompt can span many assistant turns, so
+ * anchoring on the prompt made every Stop re-collect the whole session and the
+ * dedup guard then suppressed all of it - the log silently stopped after the
+ * first turn. Anchoring on the last logged record gives exactly the new text
+ * each time, whether the session is conversational or autonomous.
+ *
+ * Claude Code splits one visible reply across several text blocks when tool
+ * calls sit between them, so all of them are joined; taking only the last would
+ * drop most of the answer.
  */
-function finalResponse(records) {
-  let start = -1;
-  for (let i = records.length - 1; i >= 0; i -= 1) {
-    if (isRealUserPrompt(records[i])) {
-      start = i;
-      break;
+function responseSince(records, lastLoggedUuid) {
+  let start = 0;
+
+  if (lastLoggedUuid) {
+    const idx = records.findIndex((r) => r?.uuid === lastLoggedUuid);
+    if (idx >= 0) start = idx + 1;
+  } else {
+    // Nothing logged yet: fall back to the last real user prompt.
+    for (let i = records.length - 1; i >= 0; i -= 1) {
+      if (isRealUserPrompt(records[i])) {
+        start = i + 1;
+        break;
+      }
     }
   }
 
   const parts = [];
   let uuid = null;
-  for (let i = start + 1; i < records.length; i += 1) {
+  for (let i = start; i < records.length; i += 1) {
     const rec = records[i];
     if (rec?.type !== 'assistant' || rec?.isSidechain === true) continue;
     const content = rec?.message?.content;
@@ -178,7 +193,10 @@ function updateFrontmatter(body, { exchanges, lastTime, model }) {
 function appendEntry(file, type, sessionId, model, text) {
   let body = fs.readFileSync(file, 'utf8');
   const prompts = (body.match(/\[LOG_ENTRY type=PROMPT /g) || []).length;
-  const num = type === 'PROMPT' ? prompts + 1 : Math.max(prompts, 1);
+  const responses = (body.match(/\[LOG_ENTRY type=RESPONSE /g) || []).length;
+  // Numbered per type: one prompt can produce many responses during autonomous
+  // work, so a shared counter would misrepresent the session.
+  const num = (type === 'PROMPT' ? prompts : responses) + 1;
   const short = sessionId.slice(0, 8);
   const now = stamp();
 
@@ -205,13 +223,11 @@ function statePath(logDir, sessionId) {
   return path.join(logDir, `.state-${sessionId}.json`);
 }
 
-function alreadyLogged(logDir, sessionId, uuid) {
-  if (!uuid) return false;
+function readState(logDir, sessionId) {
   try {
-    const s = JSON.parse(fs.readFileSync(statePath(logDir, sessionId), 'utf8'));
-    return s.lastResponseUuid === uuid;
+    return JSON.parse(fs.readFileSync(statePath(logDir, sessionId), 'utf8'));
   } catch {
-    return false;
+    return {};
   }
 }
 
@@ -256,14 +272,16 @@ function main() {
     // splits one visible reply across several text blocks around tool calls
     // and `last_assistant_message` holds only the last of them.
     const direct = typeof payload.last_assistant_message === 'string' ? payload.last_assistant_message.trim() : '';
-    const { text: joined, uuid } = finalResponse(records);
+    const lastLogged = readState(logDir, sessionId).lastResponseUuid;
+    const { text: joined, uuid } = responseSince(records, lastLogged);
     const text = joined.length >= direct.length ? joined : direct;
-    if (!text.trim()) return;
 
-    const key = payload.prompt_id || uuid;
-    if (alreadyLogged(logDir, sessionId, key)) return;
+    // Nothing new since the last entry - a repeat Stop for the same turn.
+    if (!text.trim()) return;
+    if (uuid && uuid === lastLogged) return;
+
     appendEntry(file, 'RESPONSE', sessionId, model, text);
-    markLogged(logDir, sessionId, key);
+    markLogged(logDir, sessionId, uuid);
   }
 }
 
