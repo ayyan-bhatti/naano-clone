@@ -144,7 +144,9 @@ Two entry points, deliberately:
    **empty**, so the empty states are visible rather than hidden behind seed data.
    A creator account arrives with inbound deals to accept.
 
-No password. No credentials to enter. Demo sign-in also accepts `elena@trellis.io`.
+The demo workspace needs no credentials at all. If you sign up instead, you set a real
+password — hashed with SHA-256 via the built-in Web Crypto API and verified on sign-in,
+so the field is not decorative. It is still demo auth, not authentication.
 
 Worth clicking, in order:
 
