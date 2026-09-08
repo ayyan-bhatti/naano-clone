@@ -13,7 +13,7 @@ const LINKS = [
   { href: '#how', label: 'How it works' },
   { href: '#marketplace', label: 'Marketplace' },
   { href: '#pricing', label: 'Pricing' },
-  { href: '#faq', label: 'FAQ' },
+  { href: '/free-tools', label: 'Free tools' },
 ];
 
 export function SiteNav({ tone = 'light' }: { tone?: 'light' | 'dark' } = {}) {
@@ -43,8 +43,10 @@ export function SiteNav({ tone = 'light' }: { tone?: 'light' | 'dark' } = {}) {
         </Link>
 
         <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
-          {LINKS.map((l) => (
-            <a
+          {LINKS.map((l) => {
+            const Tag = l.href.startsWith('/') ? Link : 'a';
+            return (
+            <Tag
               key={l.href}
               href={l.href}
               className={cn(
@@ -53,8 +55,9 @@ export function SiteNav({ tone = 'light' }: { tone?: 'light' | 'dark' } = {}) {
               )}
             >
               {l.label}
-            </a>
-          ))}
+            </Tag>
+          );
+          })}
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
@@ -89,16 +92,19 @@ export function SiteNav({ tone = 'light' }: { tone?: 'light' | 'dark' } = {}) {
       {open && (
         <div className="border-t border-line bg-surface px-4 py-3 md:hidden">
           <nav aria-label="Mobile" className="flex flex-col">
-            {LINKS.map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
-                onClick={() => setOpen(false)}
-                className="rounded-[8px] px-3 py-2.5 text-sm font-medium text-ink-soft hover:bg-sunken"
-              >
-                {l.label}
-              </a>
-            ))}
+            {LINKS.map((l) => {
+              const Tag = l.href.startsWith('/') ? Link : 'a';
+              return (
+                <Tag
+                  key={l.href}
+                  href={l.href}
+                  onClick={() => setOpen(false)}
+                  className="rounded-[8px] px-3 py-2.5 text-sm font-medium text-ink-soft hover:bg-sunken"
+                >
+                  {l.label}
+                </Tag>
+              );
+            })}
           </nav>
           <div className="mt-3 flex flex-col gap-2 border-t border-line pt-3">
             {hydrated && user ? (
@@ -138,6 +144,9 @@ export function SiteFooter() {
           <nav aria-label="Footer" className="flex flex-wrap gap-x-6 gap-y-2 text-[13px]">
             <Link href="/marketplace" className="text-ink-soft hover:text-ink">
               Marketplace
+            </Link>
+            <Link href="/free-tools" className="text-ink-soft hover:text-ink">
+              Free tools
             </Link>
             <Link href="/sign-up" className="text-ink-soft hover:text-ink">
               Get started
