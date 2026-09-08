@@ -89,8 +89,9 @@ dataset, not live LinkedIn data.
 | In-app motion | Hand-rolled hooks (IntersectionObserver + rAF) |
 | Marketing motion | GSAP + ScrollTrigger |
 
-Seven runtime dependencies: `next`, `react`, `react-dom`, `lucide-react`, `clsx`,
-`tailwind-merge`, `gsap`.
+Nine runtime dependencies: `next`, `react`, `react-dom`, `lucide-react`, `clsx`,
+`tailwind-merge`, `gsap`, and `@splinetool/react-spline` + `@splinetool/runtime`
+for the auth robot.
 
 **No charting library.** Recharts would have added ~150KB to draw an area chart
 and a sparkline. Both are ~100 lines of SVG.
@@ -207,11 +208,20 @@ contrast measured against the real painted background, horizontal overflow,
 tap-target sizes, unlabelled controls, duplicate ids, heading order, dead
 internal links and console noise — across public, brand and creator sessions.
 
-The four browser suites need a production build running (`npm run build && npm run
-start`) and Playwright available (`npm install --no-save playwright`) — it is a QA
-tool, not a dependency of the app.
+The browser suites need a production build running (`npm run build && npm run
+start`). Playwright is a devDependency — it never ships, and keeping it in the
+manifest stops every unrelated `npm install` from pruning it.
 
 Node 20+. No `.env` file, no API keys, nothing to configure.
+
+**One external runtime dependency.** The auth pages render a Spline scene from
+`prod.spline.design`, which is the only thing in the build that needs the
+network. It is layered rather than swapped in: the blue panel, the watching
+crowd and a hand-drawn SVG robot render immediately and are correct on their
+own, and the 3D scene fades in over them only once it has actually loaded. So
+the page is right offline, under `prefers-reduced-motion`, and if Spline is
+down. Setting `SPLINE_SCENE_URL` to `''` in `lib/spline.ts` drops it entirely
+and the hand-built robot stays for good.
 
 ## Deployment
 

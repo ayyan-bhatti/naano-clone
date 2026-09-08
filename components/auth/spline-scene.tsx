@@ -1,125 +1,79 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { useState } from 'react';
 
 import { cn } from '@/lib/cn';
 import { SPLINE_CREDIT, SPLINE_SCENE_URL } from '@/lib/spline';
 import { usePrefersReducedMotion } from '@/lib/hooks/use-motion';
 
 /**
- * Spline scene embed for the auth background.
+ * The Spline robot.
  *
- * Loads only when it scrolls into view (it is a heavy third-party iframe, and
- * blocking first paint on it would be the worst of both worlds), fades in once
- * ready, and shows a quiet placeholder until then so the page is never blank.
+ * Rendered inline with @splinetool/react-spline against the scene's own
+ * `prod.spline.design/.../scene.splinecode` file. The earlier version embedded
+ * the published viewer in an iframe, because that scene was only ever
+ * published as a viewer page and its `.splinecode` returned 403. This one is a
+ * real 1.3MB scene file, and rendering it directly is better in every way that
+ * mattered:
  *
- * Under prefers-reduced-motion the scene is not loaded at all: it is a
- * continuously looping 3D animation with no still frame and no way to pause it
- * from outside the iframe, so the only honest way to respect that setting is
- * not to render it.
+ *  - The canvas has a transparent background, so the robot sits on our blue
+ *    panel instead of bringing a grey rectangle with it.
+ *  - `onLoad` is a genuine "the scene is ready" signal. The iframe's load event
+ *    fired a dozen seconds before anything appeared, which is why that version
+ *    needed a measured delay to avoid showing an empty panel.
+ *  - No cross-origin frame, so no separate GPU surface to fight with and
+ *    nothing that can steal focus from the form.
  *
- * The iframe is inert to the user (`pointer-events-none`) so it cannot steal
- * focus or scroll from the form sitting on top of it, and `aria-hidden` keeps
- * it out of the accessibility tree — it is decoration.
+ * The runtime is ~1.5MB, so it is pulled in with next/dynamic and never
+ * reaches any page but the two auth screens. It is still the one external
+ * runtime dependency in the build: set SPLINE_SCENE_URL to '' and the
+ * hand-built robot underneath takes over permanently.
  */
+
+/*
+  The bare specifier is aliased to the package's built ESM file in
+  next.config.ts - see the note there for why the exports map cannot be used.
+  Loaded through next/dynamic with ssr:false so the ~1.5MB runtime stays out of
+  the server bundle and off every route but these two.
+*/
+const Spline = dynamic(() => import('@splinetool/react-spline'), {
+  ssr: false,
+  loading: () => null,
+});
+
 export function SplineScene({
   className,
   onReady,
 }: {
   className?: string;
-  /** Fires once the scene has painted, so the fallback beneath can stand down. */
+  /** Fires once the scene has actually loaded, so the fallback can stand down. */
   onReady?: () => void;
 }) {
-  const [inView, setInView] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const [painted, setPainted] = useState(false);
-  const hostRef = useRef<HTMLDivElement>(null);
   const reduced = usePrefersReducedMotion();
 
   /**
-   * The iframe's `load` event is not the signal we need.
-   *
-   * It fires when the viewer document is up, after which the Spline runtime
-   * still pulls ~60 chunks plus a wasm module and decodes the scene. Measured
-   * cold, the robot does not appear for another twelve seconds or so - and
-   * standing the fallback down on `load` left the panel blank grey for that
-   * whole time.
-   *
-   * Cross-origin there is no readiness event to subscribe to and no way to
-   * sample the iframe's pixels, so this waits out a measured delay instead and
-   * deliberately errs late: revealing early shows an empty panel, revealing
-   * late just means a few more seconds of the hand-built robot, which is a
-   * perfectly good thing to be looking at.
+   * Under reduced motion the scene is not loaded at all. It is a continuously
+   * looping 3D animation with no still frame, so the only honest way to
+   * respect that setting is not to render it - the hand-built robot beneath is
+   * static under the same setting and stands in.
    */
-  useEffect(() => {
-    if (!loaded) return;
-    const t = window.setTimeout(() => {
-      setPainted(true);
-      onReady?.();
-    }, 13_000);
-    return () => window.clearTimeout(t);
-  }, [loaded, onReady]);
-
-  useEffect(() => {
-    if (reduced) return;
-    const el = hostRef.current;
-    if (!el) return;
-
-    if (typeof IntersectionObserver === 'undefined') {
-      setInView(true);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setInView(true);
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { rootMargin: '200px' },
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [reduced]);
-
-  if (reduced) return null;
+  if (reduced || !SPLINE_SCENE_URL) return null;
 
   return (
-    <div ref={hostRef} className={cn('relative overflow-hidden', className)} aria-hidden>
-      {inView && (
-        <iframe
-          src={SPLINE_SCENE_URL}
-          title={`${SPLINE_CREDIT.title} by ${SPLINE_CREDIT.author}`}
-          loading="eager"
-          onLoad={() => setLoaded(true)}
-          /*
-            The scene is framed for a roughly square viewport; the panel is a
-            tall portrait column. Stretching the iframe to fill it makes Spline
-            fit the camera to that shape and crop into the robot's torso, so
-            the iframe keeps a square aspect, is sized off the panel's height,
-            and is centred - the sides overflow and are clipped instead of the
-            subject being cut in half. Nudged up slightly so the head sits on
-            the upper third rather than dead centre.
-          */
-          className={cn(
-            'pointer-events-none absolute left-1/2 top-1/2 aspect-square h-[96%] min-w-full',
-            '-translate-x-1/2 -translate-y-1/2 border-0',
-            'transition-opacity duration-[900ms] ease-out',
-            painted ? 'opacity-100' : 'opacity-0',
-          )}
-        />
-      )}
-
-      {/*
-        No placeholder of its own: whatever this is layered over stays visible
-        until the scene paints, which is the point of the arrangement. The
-        hand-built robot is the placeholder, and also the permanent fallback if
-        the scene never loads.
-      */}
+    <div className={cn('pointer-events-none', className)} aria-hidden>
+      <Spline
+        scene={SPLINE_SCENE_URL}
+        onLoad={() => {
+          setLoaded(true);
+          onReady?.();
+        }}
+        className={cn(
+          '!size-full transition-opacity duration-700 ease-out',
+          loaded ? 'opacity-100' : 'opacity-0',
+        )}
+      />
     </div>
   );
 }

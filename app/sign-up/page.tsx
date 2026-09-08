@@ -101,7 +101,6 @@ export default function SignUpPage() {
 
   return (
     <AuthLayout
-      robot
       mood={crowd.mood}
       peekProgress={crowd.peekProgress}
       eyebrow="2,400 creators are watching"

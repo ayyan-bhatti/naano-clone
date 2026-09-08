@@ -176,7 +176,7 @@ export default function SignInPage() {
           )}
         </Field>
 
-        <Button type="submit" block size="lg" variant="secondary" loading={submitting} className="!rounded-full">
+        <Button type="submit" block size="lg" loading={submitting} className="!rounded-full">
           Sign in
         </Button>
       </form>
