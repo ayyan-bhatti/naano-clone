@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react';
 
+import { MessagesSquare } from 'lucide-react';
+
 import { cn } from '@/lib/cn';
 import { isSplineEnabled } from '@/lib/spline';
 import { usePrefersReducedMotion } from '@/lib/hooks/use-motion';
-import { AuthRobot } from '@/components/auth/robot';
 import { SplineScene } from '@/components/auth/spline-scene';
 
 /**
@@ -17,14 +18,18 @@ import { SplineScene } from '@/components/auth/spline-scene';
  * It must not compete with the page. The scene is ~1.5MB of runtime plus a
  * 1.3MB file, so it is not requested until the browser reports itself idle -
  * `requestIdleCallback` after first paint, with a timeout so it still arrives
- * on browsers that never go idle. Until then the hand-drawn SVG robot is the
- * avatar, which is a few kilobytes and renders instantly, and it stays if the
- * scene never loads at all.
+ * on browsers that never go idle.
+ *
+ * What stands in until then is a plain chat glyph, not another character. An
+ * earlier version used a hand-drawn robot, and watching one robot swap for a
+ * different robot was worse than waiting: a neutral icon giving way to the
+ * real thing reads as loading, two mascots trading places reads as a bug. The
+ * glyph is also the permanent state if the scene never loads.
  *
  * And it must be legible at 56px. A full-body robot scaled into a circle is an
  * unreadable smudge, so the canvas is rendered several times the size of its
- * container and offset upward, cropping to the head and shoulders - a portrait
- * rather than a shrunken wide shot.
+ * container and offset, cropping to the head and shoulders - a portrait rather
+ * than a shrunken wide shot.
  */
 export function AssistantAvatar({ className }: { className?: string }) {
   const reduced = usePrefersReducedMotion();
@@ -71,14 +76,15 @@ export function AssistantAvatar({ className }: { className?: string }) {
   */
   return (
     <div className={cn('relative overflow-hidden rounded-full', className)}>
-      {/* Instant, and the permanent fallback if the scene never arrives. */}
-      <AuthRobot
-        mood="idle"
+      {/* Neutral while the scene loads, and permanent if it never arrives. */}
+      <span
         className={cn(
-          'absolute inset-0 size-full transition-opacity duration-500',
+          'absolute inset-0 grid place-items-center transition-opacity duration-500',
           loaded ? 'opacity-0' : 'opacity-100',
         )}
-      />
+      >
+        <MessagesSquare className="size-1/2 text-white/80" />
+      </span>
 
       {idle && (
         <div className="absolute left-1/2 top-[-7.5%] h-[250%] w-[184%] -translate-x-1/2">

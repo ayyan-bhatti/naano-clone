@@ -5,7 +5,6 @@ import Link from 'next/link';
 
 import { cn } from '@/lib/cn';
 import { Logo } from '@/components/brand';
-import { AuthRobot } from '@/components/auth/robot';
 import { useSplineRig } from '@/components/auth/spline-rig';
 import { WatchingCrowd, type CrowdMood } from '@/components/auth/watching-crowd';
 import { SplineCredit, SplineScene, type SplineApp } from '@/components/auth/spline-scene';
@@ -42,8 +41,8 @@ export function AuthLayout({
   footer?: React.ReactNode;
 }) {
   const splineEnabled = isSplineEnabled();
-  // Flips once the Spline iframe has painted, which is what retires the
-  // hand-built layer underneath it.
+  // Flips once the scene has loaded, which is what moves the copy onto its
+  // scrim at the foot of the panel.
   const [sceneReady, setSceneReady] = useState(false);
 
   /*
@@ -88,15 +87,14 @@ export function AuthLayout({
 
       {/* ---------------- The panel ---------------- */}
       {/*
-        Layered, not switched. The blue ground, the crowd and the hand-built
-        robot render immediately and are correct on their own; the Spline scene
-        loads onto a transparent canvas above them and the hand-built robot
-        steps aside only once it has actually loaded. So the panel is right
-        offline, under reduced motion, and if Spline is down - which matters,
-        because it is the only external runtime dependency in the build.
+        Layered, not switched. The blue ground and the crowd render immediately
+        and are correct on their own; the Spline scene loads over them and
+        covers the panel once it arrives. So the panel is right offline, under
+        reduced motion, and if Spline is down - which matters, because it is
+        the only external runtime dependency in the build.
 
-        The crowd stays either way: it is what reacts to the password field,
-        and the Spline scene cannot.
+        The crowd is what reacts to the password field on the way in, and the
+        robot takes that over once it is up (components/auth/spline-rig.ts).
       */}
       <aside className="relative hidden w-[46%] max-w-[720px] shrink-0 overflow-hidden bg-brand-600 lg:block">
         {/* Depth, so the flat blue does not read as a colour swatch */}
@@ -133,8 +131,13 @@ export function AuthLayout({
 
         {/*
           The clearing the crowd layout keeps free is where the content goes,
-          so every face is looking at it. The hand-built robot holds that space
-          until the Spline one has loaded, then hands it over.
+          so every face in the panel is looking at it.
+
+          Nothing stands in for the 3D robot while it loads. An earlier version
+          put a hand-drawn one there and swapped it out on load, which read as
+          two different characters trading places - worse than the crowd and
+          the statement simply holding the panel on their own until the robot
+          arrives.
         */}
         <div
           className={cn(
@@ -146,26 +149,6 @@ export function AuthLayout({
               : 'items-center justify-center text-center',
           )}
         >
-          {!sceneReady && (
-            <div className="relative mb-5">
-              {/* A crowd face with headwear landing above the antenna read as
-                  part of the robot; the vignette clears it a pocket. */}
-              <span
-                aria-hidden
-                className="absolute left-1/2 top-1/2 -z-10 size-[320px] -translate-x-1/2 -translate-y-1/2 rounded-full"
-                style={{
-                  background:
-                    'radial-gradient(circle, rgba(20,44,120,0.55) 0%, rgba(20,44,120,0.28) 45%, transparent 70%)',
-                }}
-              />
-              <AuthRobot
-                mood={mood}
-                peekProgress={peekProgress}
-                className="h-[230px] w-[220px] drop-shadow-[0_20px_34px_rgba(8,20,60,0.45)]"
-              />
-            </div>
-          )}
-
           {/* The scrim behind the copy, once the scene is carrying the panel. */}
           {sceneReady && (
             <div
