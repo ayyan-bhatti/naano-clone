@@ -6,19 +6,23 @@ import { useEffect, useState } from 'react';
 import {
   Bell,
   ChevronDown,
+  CreditCard,
   Handshake,
   LayoutGrid,
   LogOut,
   Menu,
+  MessagesSquare,
   Settings,
   Store,
   Target,
+  UserRound,
   Wallet,
   X,
 } from 'lucide-react';
 
 import { cn } from '@/lib/cn';
 import { relativeTime } from '@/lib/format';
+import { totalUnreadForRole } from '@/lib/messages';
 import { useStore } from '@/lib/store';
 import type { Role } from '@/lib/types';
 import { Logo } from '@/components/brand';
@@ -38,6 +42,7 @@ const BRAND_NAV = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid },
   { href: '/marketplace', label: 'Marketplace', icon: Store },
   { href: '/campaigns', label: 'Campaigns', icon: Target },
+  { href: '/messages', label: 'Messages', icon: MessagesSquare },
   { href: '/payouts', label: 'Payouts', icon: Wallet },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
@@ -46,7 +51,10 @@ const BRAND_NAV = [
 const CREATOR_NAV = [
   { href: '/dashboard', label: 'Overview', icon: LayoutGrid },
   { href: '/deals', label: 'Deals', icon: Handshake },
+  { href: '/messages', label: 'Messages', icon: MessagesSquare },
+  { href: '/profile', label: 'My profile', icon: UserRound },
   { href: '/earnings', label: 'Earnings', icon: Wallet },
+  { href: '/payments', label: 'Payments', icon: CreditCard },
   { href: '/marketplace', label: 'Marketplace', icon: Store },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
@@ -196,10 +204,14 @@ export function AppShell({
 
 function SidebarNav({ pathname, role }: { pathname: string; role: Role }) {
   const items = role === 'creator' ? CREATOR_NAV : BRAND_NAV;
+  const { messages, hydrated } = useStore();
+  const unreadMessages = totalUnreadForRole(messages, role);
+
   return (
-    <nav aria-label="Primary" className="flex-1 space-y-0.5 px-3 py-2">
+    <nav aria-label="Primary" className="flex-1 space-y-0.5 overflow-y-auto px-3 py-2">
       {items.map((item) => {
         const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+        const badge = item.href === '/messages' && hydrated ? unreadMessages : 0;
         return (
           <Link
             key={item.href}
@@ -211,7 +223,12 @@ function SidebarNav({ pathname, role }: { pathname: string; role: Role }) {
             )}
           >
             <item.icon className={cn('size-[18px] shrink-0', active ? 'text-brand-600' : 'text-ink-faint')} />
-            {item.label}
+            <span className="flex-1">{item.label}</span>
+            {badge > 0 && (
+              <span className="flex size-[18px] shrink-0 items-center justify-center rounded-full bg-brand-600 text-[10px] font-bold text-white">
+                {badge}
+              </span>
+            )}
           </Link>
         );
       })}

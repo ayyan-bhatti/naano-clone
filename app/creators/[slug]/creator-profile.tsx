@@ -6,9 +6,11 @@ import { useMemo } from 'react';
 import {
   ArrowLeft,
   BadgeCheck,
+  FileText,
   Heart,
   Linkedin,
   MessageCircle,
+  PenLine,
   Star,
   TrendingUp,
 } from 'lucide-react';
@@ -32,10 +34,16 @@ const AVAILABILITY: Record<Creator['availability'], { label: string; tone: 'mone
   booked: { label: 'Booked out', tone: 'neutral' },
 };
 
-export function CreatorProfile({ creator }: { creator: Creator }) {
-  const { user, hydrated, shortlist, toggleShortlist } = useStore();
+export function CreatorProfile({ creator: seeded }: { creator: Creator }) {
+  const { user, hydrated, shortlist, toggleShortlist, applyCreatorEdits } = useStore();
   const { push } = useToast();
   const router = useRouter();
+
+  // The page prerenders from seed data; if this is the signed-in creator's own
+  // profile, their edits are laid over it on the client. Everyone else sees
+  // the seeded profile either way.
+  const creator = applyCreatorEdits(seeded);
+  const isMe = user?.role === 'creator' && user.creatorId === creator.id;
 
   const profile = user?.onboarded && user.buyerProfile.personas.length ? user.buyerProfile : DEMO_USER.buyerProfile;
   const match = useMemo(() => matchScore(creator, profile), [creator, profile]);
@@ -96,14 +104,34 @@ export function CreatorProfile({ creator }: { creator: Creator }) {
               </div>
             </div>
 
+            {/* Your own profile is a thing you edit, not a thing you book. */}
             <div className="flex shrink-0 items-center gap-2">
-              <Button variant="secondary" onClick={onShortlist} aria-pressed={shortlisted}>
-                <Star className={cn('size-4', shortlisted && 'fill-brand-600 text-brand-600')} />
-                {shortlisted ? 'Shortlisted' : 'Shortlist'}
-              </Button>
-              <Button onClick={onBook} disabled={creator.availability === 'booked'}>
-                Book {formatEur(creator.pricePerPost)}
-              </Button>
+              {isMe ? (
+                <>
+                  <Link href="/media-kit">
+                    <Button variant="secondary">
+                      <FileText className="size-4" />
+                      Media kit
+                    </Button>
+                  </Link>
+                  <Link href="/profile">
+                    <Button>
+                      <PenLine className="size-4" />
+                      Edit profile
+                    </Button>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Button variant="secondary" onClick={onShortlist} aria-pressed={shortlisted}>
+                    <Star className={cn('size-4', shortlisted && 'fill-brand-600 text-brand-600')} />
+                    {shortlisted ? 'Shortlisted' : 'Shortlist'}
+                  </Button>
+                  <Button onClick={onBook} disabled={creator.availability === 'booked'}>
+                    Book {formatEur(creator.pricePerPost)}
+                  </Button>
+                </>
+              )}
             </div>
           </div>
 

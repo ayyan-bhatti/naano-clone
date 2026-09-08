@@ -9,7 +9,9 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test:calculators": "node --experimental-strip-types --import ./scripts/alias-hook-register.mjs scripts/test-calculators.ts",
+    "test:collaboration": "node --experimental-strip-types --import ./scripts/alias-hook-register.mjs scripts/test-collaboration.ts",
     "test:tracking": "node scripts/test-tracking.mjs",
+    "test:review": "node scripts/test-review-flow.mjs",
     "qa": "node scripts/qa-compare.mjs"
   },
   "dependencies": {

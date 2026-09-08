@@ -22,6 +22,9 @@ interface CollabSeed {
   publishDay?: number;
   payoutStatus?: PayoutStatus;
   deliverables?: string;
+  /** Submitted post copy. Only meaningful when status is 'in_review'. */
+  draft?: string;
+  draftNote?: string;
 }
 
 interface CampaignSeed {
@@ -66,7 +69,26 @@ const SEEDS: CampaignSeed[] = [
       { creatorId: 'marta-ferreira', status: 'published', publishDay: 3, payoutStatus: 'paid' },
       { creatorId: 'lukas-brenner', status: 'published', publishDay: 8, payoutStatus: 'paid' },
       { creatorId: 'joseph-rudd', status: 'published', publishDay: 14, payoutStatus: 'scheduled' },
-      { creatorId: 'yonathan-levy', status: 'in_review', payoutStatus: 'pending' },
+      {
+        creatorId: 'yonathan-levy',
+        status: 'in_review',
+        payoutStatus: 'pending',
+        draft: [
+          'Your pipeline number is wrong. Not slightly — structurally.',
+          '',
+          'Six tools each hold a piece of the deal, none of them agree on what stage it is in, and the number you take into the board meeting is whichever one you exported last. I have watched RevOps teams spend a full week a quarter reconciling that by hand.',
+          '',
+          'The usual fix is a migration: pick one system of record, move everything into it, lose two quarters. Trellis takes the other route — it leaves the six tools where they are and makes them agree.',
+          '',
+          'I am not going to tell you it is magic. If your data is bad going in, it is bad coming out. But the reconciliation week is gone, and that week was never the job.',
+          '',
+          'Worth twenty minutes if this is your quarter: trellis.io/revops',
+          '',
+          'Paid partnership with Trellis.',
+        ].join('\n'),
+        draftNote:
+          'Kept it problem-first — the product does not show up until paragraph three, which is what my audience actually reads. Happy to move the link higher if you want more clicks and fewer reads.',
+      },
     ],
   },
   {
@@ -161,6 +183,22 @@ function buildCampaign(seed: CampaignSeed): Campaign {
     if (cs.status === 'published') {
       collab.metrics = simulateCollaboration(seed.id, collab);
     }
+
+    // A collaboration cannot be in review without something to review, so the
+    // seeded copy is attached here rather than left implied by the status.
+    if (cs.status === 'in_review' && cs.draft) {
+      collab.drafts = [
+        {
+          id: `draft-${seed.id}-${cs.creatorId}`,
+          revision: 1,
+          body: cs.draft,
+          note: cs.draftNote,
+          submittedAt: isoDaysFrom(startDate, seed.lengthDays - 8),
+          status: 'submitted',
+        },
+      ];
+    }
+
     return collab;
   });
 

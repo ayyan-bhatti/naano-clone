@@ -10,7 +10,9 @@ import {
   Copy,
   Euro,
   Eye,
+  FileText,
   Link2,
+  MessageSquare,
   MousePointerClick,
   Play,
   Target,
@@ -30,8 +32,11 @@ import {
   statsForCreator,
 } from '@/lib/tracking';
 import { OBJECTIVE_LABELS } from '@/lib/brief';
+import { awaitingReview, awaitingRevision, latestDraft } from '@/lib/drafts';
+import { threadId } from '@/lib/messages';
 import { useStore } from '@/lib/store';
 import { AppShell, RequireAuth } from '@/components/app-shell';
+import { ReviewDraftButton } from '@/components/collaboration/draft-review';
 import { StatCard } from '@/components/stat-card';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -96,6 +101,7 @@ function CampaignDetailInner() {
 
   const trackedLink = displayLink(campaign);
   const published = campaign.collaborations.filter((c) => c.status === 'published');
+  const inReview = campaign.collaborations.filter(awaitingReview);
 
   function transition(status: CampaignStatus) {
     setCampaignStatus(campaign!.id, status);
@@ -223,6 +229,50 @@ function CampaignDetailInner() {
             </div>
           </div>
         </section>
+
+        {/* ---------- Waiting on review ---------- */}
+        {inReview.length > 0 && (
+          <Reveal>
+            <section className="rounded-[16px] border border-warn/25 bg-warn-soft/50 p-5">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-warn/15 text-warn">
+                  <FileText className="size-4" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-[14.5px] font-semibold text-ink">
+                    {inReview.length} draft{inReview.length === 1 ? '' : 's'} waiting on you
+                  </h2>
+                  <p className="mt-0.5 text-[12.5px] text-ink-soft">
+                    Nothing publishes until you approve it, and approving is what schedules the fee.
+                  </p>
+                </div>
+              </div>
+              <ul className="mt-4 space-y-2">
+                {inReview.map((collab) => {
+                  const creator = getCreator(collab.creatorId);
+                  if (!creator) return null;
+                  const draft = latestDraft(collab);
+                  return (
+                    <li
+                      key={collab.creatorId}
+                      className="flex flex-wrap items-center gap-3 rounded-[12px] border border-line bg-surface p-3"
+                    >
+                      <Avatar seed={creator.avatarSeed} name={creator.name} size="sm" />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-[13.5px] font-medium text-ink">{creator.name}</p>
+                        <p className="truncate text-[12px] text-ink-muted">
+                          Revision {draft?.revision ?? 1} · submitted{' '}
+                          {draft ? relativeTime(draft.submittedAt) : '—'}
+                        </p>
+                      </div>
+                      <ReviewDraftButton campaign={campaign} collab={collab} creator={creator} />
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          </Reveal>
+        )}
 
         {/* ---------- Metrics ---------- */}
         {published.length > 0 ? (
@@ -380,11 +430,26 @@ function CampaignDetailInner() {
                               Mark accepted
                             </Button>
                           )}
-                          {(collab.status === 'accepted' || collab.status === 'in_review') && (
-                            <Button size="sm" onClick={() => updateCollab(collab.creatorId, 'published', creator.name)}>
-                              Approve &amp; publish
-                            </Button>
+                          {/*
+                            An accepted creator has nothing to approve yet. The
+                            brand waits for copy rather than publishing on their
+                            behalf — that wait is the point of the review step.
+                          */}
+                          {collab.status === 'accepted' && (
+                            <span className="rounded-full bg-sunken px-2.5 py-1 text-[11.5px] font-medium text-ink-muted ring-1 ring-inset ring-line">
+                              {awaitingRevision(collab) ? 'Revision requested' : 'Awaiting draft'}
+                            </span>
                           )}
+                          {collab.status === 'in_review' && (
+                            <ReviewDraftButton campaign={campaign} collab={collab} creator={creator} />
+                          )}
+                          <Link
+                            href={`/messages?thread=${encodeURIComponent(threadId(campaign.id, collab.creatorId))}`}
+                            aria-label={`Message ${creator.name}`}
+                            className="rounded-[8px] border border-line p-2 text-ink-faint transition-colors hover:border-brand-300 hover:text-brand-700"
+                          >
+                            <MessageSquare className="size-4" />
+                          </Link>
                           {campaign.status === 'draft' && (
                             <button
                               onClick={() => setRemoving(collab.creatorId)}

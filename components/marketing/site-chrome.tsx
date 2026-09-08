@@ -12,7 +12,7 @@ import { useStore } from '@/lib/store';
 const LINKS = [
   { href: '#how', label: 'How it works' },
   { href: '#marketplace', label: 'Marketplace' },
-  { href: '#pricing', label: 'Pricing' },
+  { href: '/pricing', label: 'Pricing' },
   { href: '/free-tools', label: 'Free tools' },
 ];
 
@@ -153,9 +153,9 @@ export function SiteFooter() {
             <Link href="/sign-up" className="text-ink-soft hover:text-ink">
               Get started
             </Link>
-            <a href="#pricing" className="text-ink-soft hover:text-ink">
+            <Link href="/pricing" className="text-ink-soft hover:text-ink">
               Pricing
-            </a>
+            </Link>
             <a
               href="https://github.com"
               className="text-ink-soft hover:text-ink"

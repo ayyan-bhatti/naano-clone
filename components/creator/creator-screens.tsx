@@ -6,16 +6,21 @@ import {
   Check,
   Euro,
   Eye,
+  FileText,
   Handshake,
+  MessageSquare,
   MousePointerClick,
   UserCheck,
   X,
 } from 'lucide-react';
 
 import { cn } from '@/lib/cn';
-import { formatCompact, formatDate, formatEur, formatNumber } from '@/lib/format';
+import { formatCompact, formatDate, formatEur, formatNumber, relativeTime } from '@/lib/format';
 import { getCreator } from '@/lib/data/creators';
+import { latestDraft } from '@/lib/drafts';
+import { threadId } from '@/lib/messages';
 import { useStore } from '@/lib/store';
+import { SubmitDraftButton } from '@/components/collaboration/draft-review';
 import { StatCard } from '@/components/stat-card';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -80,10 +85,15 @@ function totals(deals: Deal[]) {
  * ------------------------------------------------------------------ */
 
 export function CreatorOverview() {
-  const { deals, creatorId } = useCreatorDeals();
-  const creator = creatorId ? getCreator(creatorId) : undefined;
+  const { deals } = useCreatorDeals();
+  const { myCreator: creator } = useStore();
   const t = totals(deals);
+  // Two different kinds of "waiting on you": an unanswered offer, and an
+  // accepted deal whose copy has not been written yet.
   const pending = deals.filter((d) => d.collab.status === 'invited');
+  const owed = deals.filter(
+    (d) => d.collab.status === 'accepted' || latestDraft(d.collab)?.status === 'changes_requested',
+  );
 
   if (deals.length === 0) {
     return (
@@ -147,6 +157,26 @@ export function CreatorOverview() {
             <ul className="mt-4 space-y-3">
               {pending.map((deal) => (
                 <li key={`${deal.campaign.id}-${deal.collab.creatorId}`}>
+                  <DealCard deal={deal} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        </Reveal>
+      )}
+
+      {owed.length > 0 && (
+        <Reveal>
+          <section>
+            <h2 className="text-[15px] font-semibold tracking-[-0.01em] text-ink">
+              Drafts to write
+            </h2>
+            <p className="mt-0.5 text-[12.5px] text-ink-muted">
+              You have accepted these. The fee is released when the brand approves your copy.
+            </p>
+            <ul className="mt-4 space-y-3">
+              {owed.map((deal) => (
+                <li key={`owed-${deal.campaign.id}-${deal.collab.creatorId}`}>
                   <DealCard deal={deal} />
                 </li>
               ))}
@@ -233,9 +263,12 @@ export function CreatorDeals() {
 
 function DealCard({ deal, showBrief }: { deal: Deal; showBrief?: boolean }) {
   const { campaign, collab } = deal;
-  const { setCollaborationStatus } = useStore();
+  const { setCollaborationStatus, applyCreatorEdits } = useStore();
   const { push } = useToast();
 
+  const base = getCreator(collab.creatorId);
+  const creator = base ? applyCreatorEdits(base) : undefined;
+  const draft = latestDraft(collab);
   const pending = collab.status === 'invited';
 
   function respond(accept: boolean) {
@@ -289,18 +322,66 @@ function DealCard({ deal, showBrief }: { deal: Deal; showBrief?: boolean }) {
         </dl>
       )}
 
-      {pending && (
-        <div className="mt-5 flex gap-2 border-t border-line pt-4">
-          <Button onClick={() => respond(true)}>
-            <Check className="size-4" />
-            Accept {formatEur(collab.fee)}
-          </Button>
-          <Button variant="secondary" onClick={() => respond(false)}>
-            <X className="size-4" />
-            Decline
-          </Button>
+      {/*
+        The content step. An accepted deal is not finished work — the fee is
+        released when the brand approves the copy, so the submit action lives
+        on the deal itself rather than somewhere else in the app.
+      */}
+      {draft?.status === 'changes_requested' && (
+        <div className="mt-4 rounded-[12px] border border-danger/20 bg-danger-soft/50 p-3.5">
+          <h3 className="micro-label text-danger">
+            {campaign.brand} asked for changes to revision {draft.revision}
+          </h3>
+          <p className="mt-1.5 text-[13px] leading-relaxed text-ink-soft">
+            {draft.feedback ?? 'No note was left — worth asking them what they want different.'}
+          </p>
         </div>
       )}
+
+      {collab.status === 'in_review' && draft && (
+        <div className="mt-4 rounded-[12px] border border-warn/20 bg-warn-soft/40 p-3.5">
+          <div className="flex flex-wrap items-center gap-2">
+            <FileText className="size-3.5 text-warn" />
+            <h3 className="text-[12.5px] font-semibold text-ink">
+              Revision {draft.revision} is with {campaign.brand}
+            </h3>
+            <span className="ml-auto text-[11.5px] text-ink-faint">
+              sent {relativeTime(draft.submittedAt)}
+            </span>
+          </div>
+          <p className="mt-1.5 line-clamp-3 whitespace-pre-wrap text-[12.5px] leading-relaxed text-ink-muted">
+            {draft.body}
+          </p>
+        </div>
+      )}
+
+      <div className="mt-5 flex flex-wrap gap-2 border-t border-line pt-4">
+        {pending && (
+          <>
+            <Button onClick={() => respond(true)}>
+              <Check className="size-4" />
+              Accept {formatEur(collab.fee)}
+            </Button>
+            <Button variant="secondary" onClick={() => respond(false)}>
+              <X className="size-4" />
+              Decline
+            </Button>
+          </>
+        )}
+
+        {collab.status === 'accepted' && creator && (
+          <SubmitDraftButton campaign={campaign} collab={collab} creator={creator} />
+        )}
+
+        {collab.status !== 'declined' && (
+          <Link href={`/messages?thread=${encodeURIComponent(threadId(campaign.id, collab.creatorId))}`}>
+            <Button variant="secondary">
+              <MessageSquare className="size-4" />
+              Message {campaign.brand}
+            </Button>
+          </Link>
+        )}
+      </div>
     </article>
   );
 }
@@ -399,7 +480,11 @@ export function CreatorEarnings() {
       </section>
 
       <p className="text-[12px] leading-relaxed text-ink-faint">
-        Payments are represented, not processed — no payment provider is wired into this build.
+        Payments are represented, not processed — no payment provider is wired into this build.{' '}
+        <Link href="/payments" className="font-medium text-brand-600 hover:underline">
+          Set where fees are sent
+        </Link>
+        .
       </p>
     </div>
   );

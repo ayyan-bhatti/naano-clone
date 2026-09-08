@@ -104,6 +104,29 @@ export interface CollaborationMetrics {
   pipeline: number;
 }
 
+export type DraftStatus = 'submitted' | 'changes_requested' | 'approved';
+
+/**
+ * One revision of the post copy a creator submits for approval.
+ *
+ * Revisions are appended, never overwritten, so the review history stays
+ * readable: what was sent, what the brand asked for, what changed.
+ */
+export interface Draft {
+  id: string;
+  /** 1-indexed. Revision 2 exists only because revision 1 was sent back. */
+  revision: number;
+  /** The post copy itself. */
+  body: string;
+  /** Optional note from the creator to the brand. */
+  note?: string;
+  submittedAt: string;
+  status: DraftStatus;
+  /** What the brand asked to change. Only set when status is changes_requested. */
+  feedback?: string;
+  reviewedAt?: string;
+}
+
 export interface Collaboration {
   creatorId: string;
   status: CollaborationStatus;
@@ -114,6 +137,11 @@ export interface Collaboration {
   /** Present once the collaboration has published. */
   metrics?: CollaborationMetrics;
   publishedAt?: string;
+  /**
+   * Submitted copy awaiting or having passed review. Approval of the latest
+   * revision is what publishes the collaboration and schedules the payout.
+   */
+  drafts?: Draft[];
 }
 
 export interface Brief {
@@ -153,6 +181,41 @@ export interface DailyPoint {
   leads: number;
 }
 
+export type PayoutMethodType = 'bank' | 'paypal';
+
+/**
+ * Where a creator's fees are sent.
+ *
+ * Represented, not processed - no payment provider is wired into this build,
+ * which is why only a masked tail of the account is ever kept. Storing a full
+ * IBAN in localStorage to make a demo look complete would be the wrong trade.
+ */
+export interface PayoutMethod {
+  type: PayoutMethodType;
+  accountName: string;
+  /** Last four characters only; the rest is discarded on entry. */
+  last4: string;
+  country: string;
+  addedAt: string;
+}
+
+/**
+ * Creator-authored overrides on top of the seeded marketplace profile.
+ *
+ * Kept as a sparse patch rather than a full copy of the Creator so the base
+ * data stays the single source of truth for everything the creator has not
+ * touched - and so an unedited field keeps tracking the seed.
+ */
+export interface CreatorEdits {
+  headline?: string;
+  bio?: string;
+  whyWorkWithMe?: string;
+  topics?: string[];
+  pricePerPost?: number;
+  availability?: Availability;
+  updatedAt?: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -167,6 +230,33 @@ export interface User {
   buyerProfile: BuyerProfile;
   /** Only set when role === 'creator': links the account to a marketplace profile. */
   creatorId?: string;
+  /** Creator-side only: edits applied over the seeded profile. */
+  creatorEdits?: CreatorEdits;
+  /** Creator-side only: where fees are sent. */
+  payoutMethod?: PayoutMethod;
+}
+
+/**
+ * One message in a brand <-> creator thread.
+ *
+ * Threads are keyed by collaboration (`campaignId:creatorId`) rather than by
+ * person, because the same two parties can be talking about two campaigns and
+ * conflating those conversations is how real tools get confusing.
+ */
+export interface Message {
+  id: string;
+  threadId: string;
+  from: Role;
+  authorName: string;
+  body: string;
+  createdAt: string;
+  read: boolean;
+  /**
+   * True when written by the local demo counterpart rather than typed by a
+   * person. Surfaced in the UI - a scripted reply that pretends to be a human
+   * is the kind of thing this build is trying not to do.
+   */
+  auto?: boolean;
 }
 
 export interface Notification {
@@ -216,4 +306,6 @@ export interface PersistedState {
   notifications: Notification[];
   /** Real clicks recorded by the /l/[code] route. */
   clicks: ClickEvent[];
+  /** Brand <-> creator conversation, across every collaboration. */
+  messages: Message[];
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Check, Info, X, AlertTriangle } from 'lucide-react';
 
 import { cn } from '@/lib/cn';
@@ -188,6 +189,9 @@ export function Modal({
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
+  // Portals need a document, which the server render does not have.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (!open) return;
@@ -233,11 +237,20 @@ export function Modal({
     };
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
   const widths = { sm: 'max-w-sm', md: 'max-w-lg', lg: 'max-w-2xl' };
 
-  return (
+  /**
+   * Rendered through a portal rather than in place.
+   *
+   * `position: fixed` resolves against the nearest ancestor with a transform,
+   * not the viewport — and our Reveal wrapper animates a translate, so any
+   * modal opened from inside a revealed section would be trapped in that box
+   * and sit underneath the page. Portalling to the body is the fix that holds
+   * wherever a modal is opened from.
+   */
+  return createPortal(
     <div className="fixed inset-0 z-[90] flex items-end justify-center p-0 sm:items-center sm:p-4">
       <div
         className="absolute inset-0 bg-ink/35 backdrop-blur-[2px] animate-[fade-in_150ms_ease-out]"
@@ -275,7 +288,8 @@ export function Modal({
         @keyframes fade-in{from{opacity:0}to{opacity:1}}
         @keyframes modal-in{from{opacity:0;transform:translateY(12px) scale(0.98)}to{opacity:1;transform:none}}
       `}</style>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

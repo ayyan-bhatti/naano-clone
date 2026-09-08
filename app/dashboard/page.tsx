@@ -6,6 +6,7 @@ import {
   ArrowRight,
   Euro,
   Eye,
+  FileText,
   MousePointerClick,
   Plus,
   Sparkles,
@@ -16,9 +17,11 @@ import {
 
 import { ctr, formatCompact, formatEur, formatNumber } from '@/lib/format';
 import { getCreator } from '@/lib/data/creators';
+import { awaitingReview, latestDraft } from '@/lib/drafts';
 import { aggregateMetricsWithClicks, campaignMetrics, trendDelta } from '@/lib/metrics';
 import { useStore } from '@/lib/store';
 import { AppShell, RequireAuth } from '@/components/app-shell';
+import { ReviewDraftButton } from '@/components/collaboration/draft-review';
 import { CreatorOverview } from '@/components/creator/creator-screens';
 import { StatCard } from '@/components/stat-card';
 import { Avatar } from '@/components/ui/avatar';
@@ -97,6 +100,25 @@ function DashboardInner() {
   const recent = [...campaigns]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 4);
+
+  // Everything blocked on the brand reading it, oldest submission first.
+  const reviewQueue = useMemo(
+    () =>
+      campaigns
+        .flatMap((campaign) =>
+          campaign.collaborations.filter(awaitingReview).map((collab) => {
+            const creator = getCreator(collab.creatorId);
+            return creator ? { campaign, collab, creator } : null;
+          }),
+        )
+        .filter((x): x is NonNullable<typeof x> => x !== null)
+        .sort(
+          (a, b) =>
+            new Date(latestDraft(a.collab)?.submittedAt ?? 0).getTime() -
+            new Date(latestDraft(b.collab)?.submittedAt ?? 0).getTime(),
+        ),
+    [campaigns],
+  );
 
   const firstName = user?.name.split(' ')[0] ?? 'there';
 
@@ -183,6 +205,50 @@ function DashboardInner() {
       }
     >
       <div className="mx-auto max-w-6xl space-y-6">
+        {/*
+          Review queue. Drafts are the one thing in the product that is
+          genuinely blocked on the brand, so they sit above the metrics rather
+          than below them — a number you cannot act on is worth less than a
+          post that cannot publish until you read it.
+        */}
+        {reviewQueue.length > 0 && (
+          <Reveal>
+            <section className="rounded-[16px] border border-warn/25 bg-warn-soft/50 p-4 sm:p-5">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-warn/15 text-warn">
+                  <FileText className="size-4" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-[14.5px] font-semibold text-ink">
+                    {reviewQueue.length} draft{reviewQueue.length === 1 ? '' : 's'} waiting on your
+                    approval
+                  </h2>
+                  <p className="mt-0.5 text-[12.5px] text-ink-soft">
+                    Nothing publishes until you read it, and{' '}
+                    {formatEur(reviewQueue.reduce((s, r) => s + r.collab.fee, 0))} is held until you
+                    do.
+                  </p>
+                </div>
+              </div>
+              <ul className="mt-3.5 space-y-2">
+                {reviewQueue.slice(0, 3).map(({ campaign, collab, creator }) => (
+                  <li
+                    key={`${campaign.id}-${collab.creatorId}`}
+                    className="flex flex-wrap items-center gap-3 rounded-[12px] border border-line bg-surface p-3"
+                  >
+                    <Avatar seed={creator.avatarSeed} name={creator.name} size="sm" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[13.5px] font-medium text-ink">{creator.name}</p>
+                      <p className="truncate text-[12px] text-ink-muted">{campaign.name}</p>
+                    </div>
+                    <ReviewDraftButton campaign={campaign} collab={collab} creator={creator} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </Reveal>
+        )}
+
         {/* ---------- Headline metrics ---------- */}
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <Reveal>

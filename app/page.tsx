@@ -1,12 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import {
   ArrowRight,
   BarChart3,
-  Check,
-  ChevronDown,
   FileText,
   Link2,
   Search,
@@ -14,7 +12,6 @@ import {
   Wallet,
 } from 'lucide-react';
 
-import { cn } from '@/lib/cn';
 import { CREATORS } from '@/lib/data/creators';
 import { matchScoreOnly } from '@/lib/match';
 import { DEMO_USER } from '@/lib/store';
@@ -22,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Counter } from '@/components/ui/counter';
 import { Reveal } from '@/components/ui/reveal';
 import { CreatorCard } from '@/components/creator-card';
+import { Faq, PlanCard } from '@/components/marketing/blocks';
 import { SiteFooter, SiteNav } from '@/components/marketing/site-chrome';
 
 const STEPS = [
@@ -282,6 +280,13 @@ export default function LandingPage() {
                   Every price is a flat fee per post, set by the creator and visible before you
                   book. Never a cost per click, impression or lead.
                 </p>
+                <Link
+                  href="/pricing"
+                  className="mt-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-brand-600 hover:underline"
+                >
+                  See the full price index — what 300 bookings actually went for
+                  <ArrowRight className="size-3.5" />
+                </Link>
               </div>
             </Reveal>
 
@@ -465,76 +470,3 @@ function HeroStack() {
   );
 }
 
-function PlanCard({
-  name,
-  price,
-  cadence,
-  body,
-  features,
-  cta,
-  highlighted,
-  note,
-}: {
-  name: string;
-  price: string;
-  cadence: string;
-  body: string;
-  features: string[];
-  cta: React.ReactNode;
-  highlighted?: boolean;
-  note?: string;
-}) {
-  return (
-    <div
-      className={cn(
-        'flex h-full flex-col rounded-[16px] border bg-surface p-6 shadow-card',
-        highlighted ? 'border-brand-500 ring-1 ring-brand-500/20' : 'border-line',
-      )}
-    >
-      <span className="micro-label">{name}</span>
-      <p className="mt-3 flex items-baseline gap-1.5">
-        <span className="text-[34px] font-bold tracking-[-0.03em] text-ink">{price}</span>
-        <span className="text-[13px] text-ink-muted">{cadence}</span>
-      </p>
-      <p className="mt-2 text-[13.5px] leading-relaxed text-ink-muted">{body}</p>
-      <ul className="mt-5 flex-1 space-y-2.5">
-        {features.map((f) => (
-          <li key={f} className="flex items-start gap-2.5 text-[13.5px] text-ink-soft">
-            <Check className="mt-0.5 size-4 shrink-0 text-money" aria-hidden />
-            {f}
-          </li>
-        ))}
-      </ul>
-      <div className="mt-6">{cta}</div>
-      {note && <p className="mt-3 text-[12px] leading-relaxed text-ink-faint">{note}</p>}
-    </div>
-  );
-}
-
-function Faq({ question, answer }: { question: string; answer: string }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div>
-      <button
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        className="flex w-full items-center justify-between gap-4 py-5 text-left"
-      >
-        <span className="text-[15px] font-semibold tracking-[-0.01em] text-ink">{question}</span>
-        <ChevronDown
-          className={cn('size-4 shrink-0 text-ink-muted transition-transform duration-200', open && 'rotate-180')}
-        />
-      </button>
-      <div
-        className={cn(
-          'grid transition-[grid-template-rows,opacity] duration-200 ease-out',
-          open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0',
-        )}
-      >
-        <div className="overflow-hidden">
-          <p className="pb-5 text-[13.5px] leading-relaxed text-ink-soft">{answer}</p>
-        </div>
-      </div>
-    </div>
-  );
-}

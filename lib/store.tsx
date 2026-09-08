@@ -12,6 +12,8 @@ import {
 
 import { digestsMatch } from '@/lib/auth';
 import { createClickEvent } from '@/lib/tracking';
+import { createDraft } from '@/lib/drafts';
+import { counterpartReply, createMessage, parseThreadId, seedMessages } from '@/lib/messages';
 import { generateBrief, makeTrackingCode } from '@/lib/brief';
 import { DEMO_COMPANY, DEMO_DOMAIN, SEED_CAMPAIGNS } from '@/lib/data/campaigns';
 import { CREATORS, getCreator } from '@/lib/data/creators';
@@ -22,8 +24,12 @@ import type {
   Collaboration,
   ClickEvent,
   CollaborationStatus,
+  Creator,
+  CreatorEdits,
+  Message,
   Notification,
   Objective,
+  PayoutMethod,
   PersistedState,
   Role,
   User,
@@ -43,7 +49,13 @@ import type {
  */
 
 const STORAGE_KEY = 'vouch.state.v1';
-const STATE_VERSION = 1;
+/**
+ * Bumped to 2 when drafts, messages, payout methods and creator profile edits
+ * were added. State written by an older build is discarded rather than
+ * migrated - the alternative is guessing at defaults for fields that never
+ * existed, and this is a demo whose seed data is one sign-in away.
+ */
+const STATE_VERSION = 2;
 
 /* ------------------------------------------------------------------ *
  * Defaults
@@ -124,6 +136,22 @@ function emptyState(): PersistedState {
     shortlist: [],
     notifications: [],
     clicks: [],
+    messages: [],
+  };
+}
+
+const creatorNameOf = (id: string) => getCreator(id)?.name;
+
+/** The demo brand's state, used both by sign-in and by the "load demo" path. */
+function demoState(): PersistedState {
+  return {
+    version: STATE_VERSION,
+    user: DEMO_USER,
+    campaigns: SEED_CAMPAIGNS,
+    shortlist: ['marta-ferreira', 'tomas-loucky', 'clara-nowak'],
+    notifications: demoNotifications(),
+    clicks: [],
+    messages: seedMessages(SEED_CAMPAIGNS, creatorNameOf),
   };
 }
 
@@ -192,6 +220,29 @@ interface StoreValue extends PersistedState {
   ) => void;
   addCreatorsToCampaign: (campaignId: string, creatorIds: string[]) => void;
   removeCreatorFromCampaign: (campaignId: string, creatorId: string) => void;
+  // content review
+  submitDraft: (
+    campaignId: string,
+    creatorId: string,
+    input: { body: string; note?: string },
+  ) => void;
+  reviewDraft: (
+    campaignId: string,
+    creatorId: string,
+    decision: 'approve' | 'changes',
+    feedback?: string,
+  ) => void;
+  // messaging
+  /** Appends your message and returns the counterpart's reply for the caller to deliver. */
+  sendMessage: (threadId: string, body: string) => Message | null;
+  appendMessage: (message: Message) => void;
+  markThreadRead: (threadId: string) => void;
+  // creator profile & payouts
+  updateCreatorProfile: (patch: CreatorEdits) => void;
+  setPayoutMethod: (method: PayoutMethod | null) => void;
+  /** The seeded profile with the signed-in creator's own edits applied. */
+  applyCreatorEdits: (creator: Creator) => Creator;
+  myCreator: Creator | undefined;
   // tracking
   recordClick: (input: { campaignId: string; creatorId: string | null; code: string }) => ClickEvent;
   clearClicks: () => void;
@@ -232,6 +283,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       // otherwise a new creator would land on an empty dashboard with no deals
       // to accept, which is the one screen that matters on their side.
       const creator = role === 'creator' ? pickCreatorPersona(email) : undefined;
+      const creatorCampaigns = creator
+        ? SEED_CAMPAIGNS.filter((c) => c.collaborations.some((col) => col.creatorId === creator.id))
+        : [];
       update(() => ({
         version: STATE_VERSION,
         user: {
@@ -251,9 +305,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         // are part of the product and hiding them behind seed data would be a
         // lie. A creator account instead carries the campaigns that already
         // invited them, because inbound deals are not something they create.
-        campaigns: creator
-          ? SEED_CAMPAIGNS.filter((c) => c.collaborations.some((col) => col.creatorId === creator.id))
-          : [],
+        campaigns: creatorCampaigns,
         shortlist: [],
         notifications: creator
           ? [
@@ -269,6 +321,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             ]
           : [],
         clicks: [],
+        // A creator arriving to an empty inbox next to campaigns that already
+        // invited them would not add up - the invite had to be sent somehow.
+        messages: creator
+          ? seedMessages(
+              creatorCampaigns.map((c) => ({
+                ...c,
+                collaborations: c.collaborations.filter((col) => col.creatorId === creator.id),
+              })),
+              creatorNameOf,
+            )
+          : [],
       }));
     },
     [update],
@@ -288,14 +351,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
 
     if (email.toLowerCase() === DEMO_USER.email) {
-      setState({
-        version: STATE_VERSION,
-        user: DEMO_USER,
-        campaigns: SEED_CAMPAIGNS,
-        shortlist: ['marta-ferreira', 'tomas-loucky', 'clara-nowak'],
-        notifications: demoNotifications(),
-        clicks: [],
-      });
+      setState(demoState());
       return 'ok';
     }
 
@@ -307,14 +363,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [update]);
 
   const loadDemo = useCallback(() => {
-    setState({
-      version: STATE_VERSION,
-      user: DEMO_USER,
-      campaigns: SEED_CAMPAIGNS,
-      shortlist: ['marta-ferreira', 'tomas-loucky', 'clara-nowak'],
-      notifications: demoNotifications(),
-      clicks: [],
-    });
+    setState(demoState());
   }, []);
 
   const completeOnboarding = useCallback<StoreValue['completeOnboarding']>(
@@ -540,6 +589,227 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [update],
   );
 
+  /* ---------------- content review ---------------- */
+
+  /**
+   * Creator submits copy for approval.
+   *
+   * Every submission is a new revision appended to the collaboration, so a
+   * post that went back and forth twice still shows what was asked for and
+   * what changed. The status moves to in_review, which is what puts it in
+   * front of the brand.
+   */
+  const submitDraft = useCallback<StoreValue['submitDraft']>(
+    (campaignId, creatorId, input) => {
+      const creatorName = getCreator(creatorId)?.name ?? 'A creator';
+      update((prev) => {
+        const campaign = prev.campaigns.find((c) => c.id === campaignId);
+        let revision = 1;
+
+        const campaigns = prev.campaigns.map((c) => {
+          if (c.id !== campaignId) return c;
+          return {
+            ...c,
+            collaborations: c.collaborations.map((collab) => {
+              if (collab.creatorId !== creatorId) return collab;
+              const drafts = collab.drafts ?? [];
+              revision = drafts.length + 1;
+              return {
+                ...collab,
+                status: 'in_review' as const,
+                drafts: [
+                  ...drafts,
+                  createDraft({ revision, body: input.body, note: input.note }),
+                ],
+              };
+            }),
+          };
+        });
+
+        return {
+          ...prev,
+          campaigns,
+          notifications: [
+            {
+              id: `n-draft-${campaignId}-${creatorId}-${revision}`,
+              kind: 'collaboration' as const,
+              title:
+                revision === 1
+                  ? `${creatorName} submitted a draft`
+                  : `${creatorName} submitted revision ${revision}`,
+              body: `${campaign?.name ?? 'A campaign'} — ready for your review before it goes live.`,
+              createdAt: new Date().toISOString(),
+              read: false,
+              href: `/campaigns/${campaignId}`,
+            },
+            ...prev.notifications,
+          ],
+        };
+      });
+    },
+    [update],
+  );
+
+  /**
+   * Brand reviews the latest revision.
+   *
+   * Approving is what publishes the post and schedules the fee - this is the
+   * mechanic the status flip used to stand in for. Requesting changes hands it
+   * back to the creator with the feedback attached, and the collaboration
+   * returns to accepted so it reads as "with the creator" rather than "with
+   * us".
+   */
+  const reviewDraft = useCallback<StoreValue['reviewDraft']>(
+    (campaignId, creatorId, decision, feedback) => {
+      const creatorName = getCreator(creatorId)?.name ?? 'A creator';
+      update((prev) => {
+        const campaigns = prev.campaigns.map((c) => {
+          if (c.id !== campaignId) return c;
+
+          const collaborations = c.collaborations.map((collab) => {
+            if (collab.creatorId !== creatorId) return collab;
+            const drafts = [...(collab.drafts ?? [])];
+            if (drafts.length === 0) return collab;
+
+            const last = drafts.length - 1;
+            const reviewedAt = new Date().toISOString();
+
+            if (decision === 'approve') {
+              drafts[last] = { ...drafts[last], status: 'approved', reviewedAt };
+              const next: Collaboration = {
+                ...collab,
+                drafts,
+                status: 'published',
+                publishedAt: collab.publishedAt ?? reviewedAt,
+                payoutStatus: 'scheduled',
+              };
+              next.metrics = simulateCollaboration(c.id, next);
+              return next;
+            }
+
+            drafts[last] = {
+              ...drafts[last],
+              status: 'changes_requested',
+              feedback: feedback?.trim() || undefined,
+              reviewedAt,
+            };
+            return { ...collab, drafts, status: 'accepted' as const };
+          });
+
+          const next = { ...c, collaborations };
+          return { ...next, daily: buildDailySeries(next, 30) };
+        });
+
+        const campaign = campaigns.find((c) => c.id === campaignId);
+
+        return {
+          ...prev,
+          campaigns,
+          notifications: [
+            {
+              id: `n-review-${campaignId}-${creatorId}-${Date.now()}`,
+              kind: 'collaboration' as const,
+              title:
+                decision === 'approve'
+                  ? `Approved ${creatorName}'s post`
+                  : `Changes requested from ${creatorName}`,
+              body:
+                decision === 'approve'
+                  ? `${campaign?.name ?? 'Campaign'} — published and the fee is scheduled for release.`
+                  : `${campaign?.name ?? 'Campaign'} — back with the creator for a revision.`,
+              createdAt: new Date().toISOString(),
+              read: false,
+              href: `/campaigns/${campaignId}`,
+            },
+            ...prev.notifications,
+          ],
+        };
+      });
+    },
+    [update],
+  );
+
+  /* ---------------- messaging ---------------- */
+
+  /**
+   * Sends a message and returns what the other side would reply, without
+   * appending it. The caller decides when the reply lands, so it arrives a
+   * beat later like a person typing rather than materialising in the same
+   * frame - and so a component that does not want a reply simply ignores the
+   * return value.
+   */
+  const sendMessage = useCallback<StoreValue['sendMessage']>(
+    (id, body) => {
+      const user = state.user;
+      if (!user || !body.trim()) return null;
+
+      const authorName = user.role === 'brand' ? user.company : user.name;
+      const mine = createMessage({ threadId: id, from: user.role, authorName, body: body.trim() });
+      // Your own message is never unread to you.
+      mine.read = true;
+
+      update((prev) => ({ ...prev, messages: [...prev.messages, mine] }));
+
+      const parsed = parseThreadId(id);
+      const counterpartName =
+        user.role === 'brand'
+          ? (parsed && getCreator(parsed.creatorId)?.name) || 'The creator'
+          : state.campaigns.find((c) => c.id === parsed?.campaignId)?.brand ?? 'The brand';
+
+      return counterpartReply({ threadId: id, body, from: user.role, counterpartName });
+    },
+    [state.user, state.campaigns, update],
+  );
+
+  const appendMessage = useCallback<StoreValue['appendMessage']>(
+    (message) => {
+      update((prev) => ({ ...prev, messages: [...prev.messages, message] }));
+    },
+    [update],
+  );
+
+  const markThreadRead = useCallback<StoreValue['markThreadRead']>(
+    (id) => {
+      update((prev) => ({
+        ...prev,
+        messages: prev.messages.map((m) => (m.threadId === id ? { ...m, read: true } : m)),
+      }));
+    },
+    [update],
+  );
+
+  /* ---------------- creator profile & payouts ---------------- */
+
+  const updateCreatorProfile = useCallback<StoreValue['updateCreatorProfile']>(
+    (patch) => {
+      update((prev) => {
+        if (!prev.user) return prev;
+        return {
+          ...prev,
+          user: {
+            ...prev.user,
+            creatorEdits: {
+              ...prev.user.creatorEdits,
+              ...patch,
+              updatedAt: new Date().toISOString(),
+            },
+          },
+        };
+      });
+    },
+    [update],
+  );
+
+  const setPayoutMethod = useCallback<StoreValue['setPayoutMethod']>(
+    (method) => {
+      update((prev) => {
+        if (!prev.user) return prev;
+        return { ...prev, user: { ...prev.user, payoutMethod: method ?? undefined } };
+      });
+    },
+    [update],
+  );
+
   /* ---------------- tracking ---------------- */
 
   /**
@@ -588,6 +858,38 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [state.shortlist],
   );
 
+  /**
+   * Overlays the signed-in creator's edits on their own profile, and returns
+   * everyone else untouched. Keeping this as a function rather than mutating
+   * CREATORS means the seed data stays immutable and shared, and an edit
+   * cannot leak into another creator's card.
+   */
+  const applyCreatorEdits = useCallback(
+    (creator: Creator): Creator => {
+      const user = state.user;
+      if (!user || user.role !== 'creator' || user.creatorId !== creator.id) return creator;
+      const edits = user.creatorEdits;
+      if (!edits) return creator;
+      return {
+        ...creator,
+        headline: edits.headline ?? creator.headline,
+        bio: edits.bio ?? creator.bio,
+        whyWorkWithMe: edits.whyWorkWithMe ?? creator.whyWorkWithMe,
+        topics: edits.topics ?? creator.topics,
+        pricePerPost: edits.pricePerPost ?? creator.pricePerPost,
+        availability: edits.availability ?? creator.availability,
+      };
+    },
+    [state.user],
+  );
+
+  const myCreator = useMemo(() => {
+    const id = state.user?.creatorId;
+    if (!id) return undefined;
+    const base = getCreator(id);
+    return base ? applyCreatorEdits(base) : undefined;
+  }, [state.user?.creatorId, applyCreatorEdits]);
+
   const value = useMemo<StoreValue>(
     () => ({
       ...state,
@@ -605,6 +907,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setCollaborationStatus,
       addCreatorsToCampaign,
       removeCreatorFromCampaign,
+      submitDraft,
+      reviewDraft,
+      sendMessage,
+      appendMessage,
+      markThreadRead,
+      updateCreatorProfile,
+      setPayoutMethod,
+      applyCreatorEdits,
+      myCreator,
       recordClick,
       clearClicks,
       markNotificationRead,
@@ -627,6 +938,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setCollaborationStatus,
       addCreatorsToCampaign,
       removeCreatorFromCampaign,
+      submitDraft,
+      reviewDraft,
+      sendMessage,
+      appendMessage,
+      markThreadRead,
+      updateCreatorProfile,
+      setPayoutMethod,
+      applyCreatorEdits,
+      myCreator,
       recordClick,
       clearClicks,
       markNotificationRead,

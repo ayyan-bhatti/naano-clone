@@ -132,3 +132,43 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Print. The media kit is a document a creator sends to a brand, so it has to
+   survive Ctrl+P: the app chrome is removed, the sheet loses its rounding and
+   shadow, and links stop being blue. Print-to-PDF is the browser's own, which
+   is why there is no PDF dependency in package.json.
+--------------------------------------------------------------------------- */
+@media print {
+  .no-print,
+  aside,
+  header.sticky,
+  nav[aria-label='Primary'] {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+
+  .print-sheet {
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .print-sheet section,
+  .print-sheet header,
+  .print-sheet footer {
+    break-inside: avoid;
+  }
+
+  a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+}
