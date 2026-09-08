@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { cn } from '@/lib/cn';
 import { Logo } from '@/components/brand';
 import { WatchingCrowd, type CrowdMood } from '@/components/auth/watching-crowd';
+import { SplineCredit, SplineScene } from '@/components/auth/spline-scene';
+import { isSplineEnabled } from '@/lib/spline';
 
 /**
  * Centred auth shell.
@@ -30,6 +32,8 @@ export function AuthLayout({
   children: React.ReactNode;
   footer?: React.ReactNode;
 }) {
+  const splineEnabled = isSplineEnabled();
+
   return (
     <div className="relative isolate flex min-h-dvh flex-col overflow-hidden bg-[#0a0c17]">
       {/* Depth behind the crowd */}
@@ -56,11 +60,20 @@ export function AuthLayout({
         }}
       />
 
-      <WatchingCrowd
-        mood={mood}
-        peekProgress={peekProgress}
-        className="absolute inset-0 -z-10 size-full"
-      />
+      {/*
+        Background: the Spline scene when one is configured, otherwise the
+        hand-built crowd. Both are live paths - lib/spline.ts picks between
+        them, and the crowd is the default because it reacts to the form.
+      */}
+      {splineEnabled ? (
+        <SplineScene className="absolute inset-0 -z-10 size-full" />
+      ) : (
+        <WatchingCrowd
+          mood={mood}
+          peekProgress={peekProgress}
+          className="absolute inset-0 -z-10 size-full"
+        />
+      )}
 
       {/* Header */}
       <header className="relative z-10 flex items-center justify-between px-5 py-5 sm:px-8 sm:py-6">
@@ -95,6 +108,7 @@ export function AuthLayout({
           </div>
 
           {footer && <div className="mt-5 text-center">{footer}</div>}
+          {splineEnabled && <SplineCredit className="mt-4 text-center" />}
         </div>
       </main>
     </div>
