@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:calculators": "node --experimental-strip-types --import ./scripts/alias-hook-register.mjs scripts/test-calculators.ts"
   },
   "dependencies": {
     "clsx": "^2.1.1",
