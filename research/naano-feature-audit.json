@@ -1,0 +1,322 @@
+[
+  {
+    "route": "/",
+    "ok": true,
+    "status": 200,
+    "title": "Naano: B2B LinkedIn Creator Marketplace",
+    "data": {
+      "h1": [
+        "The B2B LinkedInCreator Marketplace."
+      ],
+      "h2": [
+        "Work with all the best creators.",
+        "Run creator campaigns from one place.",
+        "Real teams. Measurable pipeline.",
+        "Proven across thousands of campaigns.",
+        "Pricing.",
+        "Frequently asked questions.",
+        "Your next creator campaign starts here."
+      ],
+      "inputs": [],
+      "buttons": [
+        "Resources",
+        "EN",
+        "2:40",
+        "What is Naano?",
+        "How does Naano find the right creators?",
+        "Which networks do you support?",
+        "How does per-post pricing work?",
+        "How does attribution work?",
+        "Do you handle creator payouts?",
+        "Can I upgrade or cancel anytime?"
+      ],
+      "forms": 0
+    }
+  },
+  {
+    "route": "/creators",
+    "ok": true,
+    "status": 200,
+    "title": "Get paid for your LinkedIn content: Naano for creators",
+    "data": {
+      "h1": [
+        "Get paid to post on LinkedIn"
+      ],
+      "h2": [
+        "Monetize your content on Naano.",
+        "For creators who don't wantthe administrative burden.",
+        "Real posts from real creators.",
+        "What creators say.",
+        "Frequently asked questions.",
+        "You've seen how it works.Now get paid for it.",
+        "Audience measurement"
+      ],
+      "inputs": [],
+      "buttons": [
+        "Resources",
+        "EN",
+        "What is Naano?",
+        "Is Naano free for creators?",
+        "How much can I earn?",
+        "How and when do I get paid?",
+        "Do I have to sign an exclusivity contract?",
+        "What kind of brands are on Naano?",
+        "Do I keep control of my content?",
+        "How do I join?",
+        "Reject",
+        "Allow"
+      ],
+      "forms": 0
+    }
+  },
+  {
+    "route": "/agencies",
+    "ok": true,
+    "status": 200,
+    "title": "Naano for agencies — Brand and creator operations",
+    "data": {
+      "h1": [
+        "Choose the workspace that matches your agency."
+      ],
+      "h2": [
+        "What does your agency manage?",
+        "Not sure which workspace fits your agency?",
+        "Audience measurement"
+      ],
+      "inputs": [],
+      "buttons": [
+        "Resources",
+        "EN",
+        "Reject",
+        "Allow"
+      ],
+      "forms": 0
+    }
+  },
+  {
+    "route": "/about",
+    "ok": true,
+    "status": 200,
+    "title": "About Naano: the team behind the B2B LinkedIn creator marketplace",
+    "data": {
+      "h1": [
+        "Built by founders,for founders."
+      ],
+      "h2": [
+        "Built on Proven Results",
+        "Make creator marketing your most effective revenue channel.",
+        "Better for brands.Better for creators.",
+        "The Future of Growth",
+        "Audience measurement"
+      ],
+      "inputs": [],
+      "buttons": [
+        "Resources",
+        "EN",
+        "Reject",
+        "Allow"
+      ],
+      "forms": 0
+    }
+  },
+  {
+    "route": "/pricing",
+    "ok": true,
+    "status": 200,
+    "title": "Pricing | Naano",
+    "data": {
+      "h1": [
+        "Naano pricing"
+      ],
+      "h2": [
+        "How per-post pricing works",
+        "Pricing FAQ",
+        "Start free, upgrade when you're ready.",
+        "Audience measurement"
+      ],
+      "inputs": [],
+      "buttons": [
+        "Resources",
+        "EN",
+        "Reject",
+        "Allow"
+      ],
+      "forms": 0
+    }
+  },
+  {
+    "route": "/reports",
+    "ok": true,
+    "status": 200,
+    "title": "Naano Reports: B2B LinkedIn Creator Marketing Data",
+    "data": {
+      "h1": [
+        "B2B LinkedIn creator marketing, measured"
+      ],
+      "h2": [
+        "LinkedIn Sponsored Post Price Index 2026",
+        "Q2 2026 B2B Creator-Led Growth Benchmarks",
+        "LinkedIn Creator Marketing Benchmarks 2026",
+        "Using this data",
+        "Built on the same data",
+        "Ready to scale with naano?",
+        "Audience measurement"
+      ],
+      "inputs": [],
+      "buttons": [
+        "Resources",
+        "EN",
+        "Reject",
+        "Allow"
+      ],
+      "forms": 0
+    }
+  },
+  {
+    "route": "/book",
+    "ok": true,
+    "status": 200,
+    "title": "Book a campaign call — Naano",
+    "data": {
+      "h1": [
+        "Let's build your next creator campaign."
+      ],
+      "h2": [
+        "Book a campaign call",
+        "Audience measurement"
+      ],
+      "inputs": [],
+      "buttons": [
+        "Reject",
+        "Allow"
+      ],
+      "forms": 0
+    }
+  },
+  {
+    "route": "/selection",
+    "ok": true,
+    "status": 200,
+    "title": "Find LinkedIn Creators for B2B — Free Creator Search | Naano",
+    "data": {
+      "h1": [
+        "Find the LinkedIn creators your buyers already trust."
+      ],
+      "h2": [
+        "A shortlist you can act on the same day.",
+        "How to find LinkedIn creators for your campaign",
+        "First time here? What Naano is.",
+        "Frequently asked questions",
+        "Related reading",
+        "Ready to scale with naano?",
+        "Audience measurement"
+      ],
+      "inputs": [
+        "input[text]: Acme",
+        "input[text]: company.com",
+        "input[email]: you@company.com",
+        "input[text]: Exact creator budget",
+        "input[text]: e.g. RevOps leaders at B2B SaaS companies",
+        "input[text]: website"
+      ],
+      "buttons": [
+        "Build awarenessReach your market repeatedly",
+        "€2,500",
+        "€10,000",
+        "€50,000",
+        "Get my free creator shortlist →",
+        "Reject",
+        "Allow"
+      ],
+      "forms": 1
+    }
+  },
+  {
+    "route": "/register",
+    "ok": true,
+    "status": 200,
+    "title": "Naano: B2B LinkedIn Creator Marketplace",
+    "data": {
+      "h1": [
+        "Create your account"
+      ],
+      "h2": [
+        "One platform. Two sides."
+      ],
+      "inputs": [],
+      "buttons": [
+        "EN"
+      ],
+      "forms": 0
+    }
+  },
+  {
+    "route": "/register?role=saas",
+    "ok": true,
+    "status": 200,
+    "title": "Naano: B2B LinkedIn Creator Marketplace",
+    "data": {
+      "h1": [
+        "Join Naano"
+      ],
+      "h2": [
+        "Creators. Brands. Results."
+      ],
+      "inputs": [],
+      "buttons": [
+        "EN",
+        "Sign up with email"
+      ],
+      "forms": 0
+    }
+  },
+  {
+    "route": "/login",
+    "ok": true,
+    "status": 200,
+    "title": "Naano: B2B LinkedIn Creator Marketplace",
+    "data": {
+      "h1": [
+        "Welcome back"
+      ],
+      "h2": [
+        "Welcome back."
+      ],
+      "inputs": [
+        "input[email]: john@company.com",
+        "input[password]: ••••••••"
+      ],
+      "buttons": [
+        "EN",
+        "Sign in"
+      ],
+      "forms": 1
+    }
+  },
+  {
+    "route": "/case-studies/blogseo",
+    "ok": true,
+    "status": 200,
+    "title": "How BlogSEO turned creator marketing into a measurable acquisition channel — Naano case study",
+    "data": {
+      "h1": [
+        "How BlogSEO turned creator marketing into a measurable acquisition channel"
+      ],
+      "h2": [
+        "The challenge",
+        "The campaign",
+        "The results",
+        "Why it worked",
+        "Turn creator engagement into pipeline.",
+        "Audience measurement"
+      ],
+      "inputs": [],
+      "buttons": [
+        "Vincent JosseCEO & Founder, BlogSEO",
+        "Reject",
+        "Allow"
+      ],
+      "forms": 0
+    }
+  }
+]
