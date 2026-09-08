@@ -30,14 +30,16 @@ export function SiteNav({ tone = 'light' }: { tone?: 'light' | 'dark' } = {}) {
   }, []);
 
   return (
-    <header
-      className={cn(
-        'sticky top-0 z-50 transition-[background-color,border-color,backdrop-filter] duration-200',
-        scrolled ? 'border-b border-line bg-surface/80 backdrop-blur-md' : 'border-b border-transparent',
-        dark && 'text-white',
-      )}
-    >
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+    <header className={cn('sticky top-0 z-50 px-3 pt-3 sm:px-4 sm:pt-4', dark && 'text-white')}>
+      <div
+        className={cn(
+          'mx-auto flex h-14 max-w-6xl items-center justify-between rounded-full px-4 sm:px-5',
+          'transition-[background-color,border-color,box-shadow,backdrop-filter] duration-200',
+          scrolled || !dark
+            ? 'border border-line bg-surface/90 shadow-card backdrop-blur-md'
+            : 'border border-white/12 bg-white/5 backdrop-blur-md',
+        )}
+      >
         <Link href="/" aria-label="Vouch home">
           <Logo className={dark ? '[&>span:last-child]:text-white' : undefined} />
         </Link>

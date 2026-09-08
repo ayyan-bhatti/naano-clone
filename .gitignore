@@ -37,3 +37,7 @@ next-env.d.ts
 
 # NOTE: .agent-logs/ is deliberately NOT ignored. The prompt/response record
 # ships with this repo as part of the 8x submission.
+
+# Playwright QA artifacts (screenshots are evidence; the browser cache is not)
+/test-results/
+/playwright-report/

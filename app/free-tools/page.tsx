@@ -9,6 +9,7 @@ import {
   Euro,
   Activity,
   Search,
+  Sparkles,
   Target,
 } from 'lucide-react';
 
@@ -90,15 +91,19 @@ export default function FreeToolsPage() {
       <SiteNav />
 
       <main id="main" className="flex-1">
-        {/* Header */}
-        <section className="aurora border-b border-line">
-          <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
+        {/* Header — centred, matching the observed page structure */}
+        <section className="border-b border-line">
+          <div className="mx-auto max-w-3xl px-4 py-16 text-center sm:px-6 sm:py-24">
             <Reveal>
-              <span className="micro-label">Free tools</span>
-              <h1 className="mt-3 max-w-3xl text-[34px] font-extrabold leading-[1.05] tracking-[-0.04em] text-ink sm:text-[46px]">
-                Free tools for B2B creator marketing.
+              <span className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-[12.5px] font-medium text-ink-soft shadow-card">
+                <Sparkles className="size-3.5 text-brand-600" aria-hidden />
+                Free tools by Vouch
+              </span>
+              <h1 className="mt-7 text-[40px] font-extrabold leading-[1.04] tracking-[-0.04em] text-ink sm:text-[58px]">
+                Free tools for B2B creator marketing
+                <span className="text-brand-600">.</span>
               </h1>
-              <p className="mt-4 max-w-2xl text-[15.5px] leading-relaxed text-ink-soft">
+              <p className="mx-auto mt-5 max-w-xl text-[16px] leading-relaxed text-ink-soft">
                 Five working tools for teams running LinkedIn creator campaigns. No account, no
                 payment method, no email gate — and every calculation runs in your browser.
               </p>
@@ -108,9 +113,9 @@ export default function FreeToolsPage() {
 
         {/* Tools */}
         <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {TOOLS.map((tool, i) => (
-              <Reveal key={tool.href} delay={i * 50} className={i === 0 ? 'sm:col-span-2' : undefined}>
+              <Reveal key={tool.href} delay={i * 50}>
                 <Link
                   href={tool.href}
                   className={cn(
@@ -123,13 +128,13 @@ export default function FreeToolsPage() {
                     <span className="flex size-11 shrink-0 items-center justify-center rounded-[13px] bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-600 group-hover:text-white">
                       <tool.icon className="size-5" />
                     </span>
-                    <span className="rounded-full bg-money-soft px-2.5 py-1 text-[11px] font-semibold text-money">
+                    <span className="rounded-full border border-line px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
                       Free
                     </span>
                   </div>
 
                   <h2 className="mt-4 text-[17px] font-bold tracking-[-0.02em] text-ink">{tool.title}</h2>
-                  <p className="mt-1 text-[14px] font-medium text-ink-soft">{tool.tagline}</p>
+                  <p className="mt-1.5 text-[13.5px] font-medium text-brand-600">{tool.tagline}</p>
                   <p className="mt-3 flex-1 text-[13.5px] leading-relaxed text-ink-muted">{tool.body}</p>
 
                   <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
