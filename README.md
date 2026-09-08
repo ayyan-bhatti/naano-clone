@@ -50,6 +50,28 @@ this were a real product decision.
 - Deals with **accept / decline** on inbound offers
 - Earnings ledger
 
+**Free tools** — five public calculators, no account, all working:
+
+| Tool | What it does |
+|---|---|
+| [Creator Search](/free-tools/creator-search) | Free-text brief → ranked shortlist with fit score, price and a reason per creator |
+| [Creator Worth](/free-tools/creator-worth) | Followers + engagement + niche → per-post fee range, with every step shown |
+| [Engagement Rate](/free-tools/engagement-rate) | Rate by followers and by impressions, against size-scaled benchmarks |
+| [Delivery Odds](/free-tools/delivery-odds) | Offer + audience size → publication odds and price positioning |
+| [Campaign Budget](/free-tools/campaign-budget) | Budget → booked → **published** → true cost per published post |
+
+Calculators are pure functions in `lib/calculators/` with no React import, covered by
+`npm run test:calculators` — 1061 assertions across normal, zero, empty, negative,
+decimal and extreme inputs, asserting no NaN or non-finite value can reach the UI, plus
+determinism on repeat runs. Benchmark tables live in `lib/data/benchmarks.ts` as a
+clearly-labelled reference set of our own; every tool page says so.
+
+The one place this departs from the original: Naano's creator search is a form that a
+human answers by email within 48 hours. Reproducing that would give a reviewer a form
+that does nothing, so ours runs the match instantly against the demo marketplace using
+the *same* scorer as `/marketplace` — and the page states plainly that it is a local
+dataset, not live LinkedIn data.
+
 ## Tech stack
 
 | | |
@@ -76,6 +98,7 @@ level rather than just in CSS.
 ```
 app/                       routes (App Router)
   page.tsx                 landing
+  free-tools/              index + five calculators
   marketplace/             public creator directory + route-level loading UI
   creators/[slug]/         prerendered profiles (SSG) + client island
   campaigns/               list, new (4-step), [id] detail
@@ -87,6 +110,8 @@ components/
   creator-card.tsx         the marketplace card
   app-shell.tsx            signed-in chrome + RequireAuth guard
 lib/
+  calculators/             five pure calculators, no React
+  data/benchmarks.ts       benchmark tables (our own labelled set)
   types.ts                 the domain
   data/creators.ts         24 hand-authored creators, derived stats
   data/campaigns.ts        5 seeded campaigns across every status
@@ -141,8 +166,9 @@ npm run dev          # http://localhost:3000
 ```bash
 npm run build        # production build
 npm run start        # serve the build
-npm run lint         # eslint
-npm run typecheck    # tsc --noEmit
+npm run lint             # eslint
+npm run typecheck        # tsc --noEmit
+npm run test:calculators # 1061 assertions over the pure calculators
 ```
 
 Node 20+. No `.env` file, no API keys, nothing to configure.
