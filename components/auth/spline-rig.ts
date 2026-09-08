@@ -58,9 +58,20 @@ export function useSplineRig(
   const pointer = useRef({ x: 0.5, y: 0.45 });
   const pose = useRef<Pose>({ ...REST });
 
+  /*
+    Nothing moves until the pointer does.
+
+    The scene arrives mid-way through its own idle loop, and starting to track
+    a cursor that has not moved yet made the head drift on load for no reason
+    the visitor could see. It holds dead centre until there is an actual
+    pointer position to follow.
+  */
+  const engaged = useRef(false);
+
   useEffect(() => {
     if (reduced) return;
     const onMove = (e: PointerEvent) => {
+      engaged.current = true;
       pointer.current = {
         x: e.clientX / Math.max(window.innerWidth, 1),
         y: e.clientY / Math.max(window.innerHeight, 1),
@@ -90,27 +101,43 @@ export function useSplineRig(
 
       if (m === 'away') {
         /*
-          Turned right away from the form and dipped, so it is unmistakably not
-          looking. Peeking brings it most of the way back without settling —
-          it is a glance, not a return.
+          Two poses blended by how long you have been still, rather than
+          switched at a threshold.
+
+          AWAY is turned hard right, away from the form, and dipped. SNEAK
+          rotates back PAST centre so it is actually looking at the form again
+          - the earlier version peeked to +0.18, which is still turned away
+          from it, so the glance went nowhere. The head stays dipped and picks
+          up a roll, which is what makes it read as furtive rather than as
+          simply looking back.
+
+          peekProgress already ramps 0 -> 1 over 900ms, so blending on it
+          directly gives the whole movement for free.
         */
-        const peeking = peek > 0.5;
-        target.headYaw = peeking ? 0.18 : 0.62;
-        target.headPitch = peeking ? 0.04 : 0.26;
-        target.headRoll = peeking ? -0.04 : -0.12;
-        target.bodyYaw = peeking ? 0.06 : 0.2;
+        const AWAY = { yaw: 0.62, pitch: 0.26, roll: -0.12, body: 0.2 };
+        const SNEAK = { yaw: -0.2, pitch: 0.15, roll: -0.2, body: 0.02 };
+
+        target.headYaw = lerp(AWAY.yaw, SNEAK.yaw, peek);
+        target.headPitch = lerp(AWAY.pitch, SNEAK.pitch, peek);
+        target.headRoll = lerp(AWAY.roll, SNEAK.roll, peek);
+        target.bodyYaw = lerp(AWAY.body, SNEAK.body, peek);
       } else if (m === 'watching') {
         // The form is in the left column, so the robot turns that way.
         target.headYaw = -0.42;
         target.headPitch = -0.1;
         target.bodyYaw = -0.14;
-      } else {
-        // Idle: follow the cursor, with a slow sway so it is never quite still.
-        target.headYaw = (0.5 - pointer.current.x) * 0.9 + Math.sin(t * 0.6) * 0.05;
+      } else if (engaged.current) {
+        /*
+          Follow the cursor. Positive yaw turns the head to the viewer's right,
+          so it tracks (x - 0.5) - an earlier version had this inverted and the
+          robot looked away from wherever the mouse went.
+        */
+        target.headYaw = (pointer.current.x - 0.5) * 0.9 + Math.sin(t * 0.6) * 0.05;
         target.headPitch = (pointer.current.y - 0.45) * 0.55;
         target.headRoll = Math.sin(t * 0.45) * 0.03;
-        target.bodyYaw = (0.5 - pointer.current.x) * 0.22;
+        target.bodyYaw = (pointer.current.x - 0.5) * 0.22;
       }
+      // Otherwise the target stays at REST: still, facing front.
 
       const p = pose.current;
       // Turning away is quicker than settling back: a flinch, then a drift.
