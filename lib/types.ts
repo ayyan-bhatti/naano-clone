@@ -181,14 +181,18 @@ export interface DailyPoint {
   leads: number;
 }
 
-export type PayoutMethodType = 'bank' | 'paypal';
+export type PayoutMethodType = 'bank' | 'paypal' | 'stripe';
 
 /**
  * Where a creator's fees are sent.
  *
- * Represented, not processed - no payment provider is wired into this build,
- * which is why only a masked tail of the account is ever kept. Storing a full
- * IBAN in localStorage to make a demo look complete would be the wrong trade.
+ * Two routes, and they are not equivalent.
+ *
+ * `stripe` is real: Stripe Connect holds the bank details and this build keeps
+ * only the account id. `bank` and `paypal` are the represented fallback used
+ * when no Stripe key is configured, and there only a masked tail is kept -
+ * storing a full IBAN in localStorage to make a demo look complete would be
+ * the wrong trade.
  */
 export interface PayoutMethod {
   type: PayoutMethodType;
@@ -197,6 +201,16 @@ export interface PayoutMethod {
   last4: string;
   country: string;
   addedAt: string;
+  /**
+   * Set only for `type: 'stripe'`: the Connect account Stripe created.
+   *
+   * This is the whole reason the Connect path is better than the form above
+   * it. An account id is not a credential - it identifies a relationship, and
+   * the bank details behind it live at Stripe and never reach this build. The
+   * masked `last4` on a Stripe method is read back from the API, not typed by
+   * anyone.
+   */
+  stripeAccountId?: string;
 }
 
 /**
@@ -308,4 +322,17 @@ export interface PersistedState {
   clicks: ClickEvent[];
   /** Brand <-> creator conversation, across every collaboration. */
   messages: Message[];
+  /**
+   * Stripe Connect account ids, keyed by creator id.
+   *
+   * This is the one piece of a creator's payout setup the brand side needs to
+   * see, and it stands in for a server-side table. A creator's `payoutMethod`
+   * lives on their own session and is invisible to a brand - correctly - but a
+   * brand releasing a fee has to know where it is going, and a real product
+   * would read that from the database rather than from the payee's browser.
+   *
+   * Only the account id is shared. It is a reference, not a credential: the
+   * bank details behind it never leave Stripe.
+   */
+  connectedAccounts: Record<string, string>;
 }

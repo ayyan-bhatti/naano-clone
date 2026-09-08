@@ -213,29 +213,95 @@ The browser suites need a production build running (`npm run build && npm run
 start`). Playwright is a devDependency — it never ships, and keeping it in the
 manifest stops every unrelated `npm install` from pruning it.
 
-Node 20+. No `.env` file, no API keys, nothing to configure.
+Node 20+. The app runs with no configuration at all; a `.env.local` is
+optional and only turns on Stripe (see below). Copy `.env.example` if you want
+it.
 
 **One external runtime dependency.** The auth pages render a Spline scene from
 `prod.spline.design`, which is the only thing in the build that needs the
 network. It is layered rather than swapped in: the blue panel, the watching
-crowd and a hand-drawn SVG robot render immediately and are correct on their
-own, and the 3D scene fades in over them only once it has actually loaded. So
-the page is right offline, under `prefers-reduced-motion`, and if Spline is
-down. Setting `SPLINE_SCENE_URL` to `''` in `lib/spline.ts` drops it entirely
-and the hand-built robot stays for good.
+crowd and the statement render immediately and are correct on their own, and
+the 3D scene fades in over them only once it has actually loaded. Nothing
+stands in for the robot in the meantime — an earlier build put a hand-drawn one
+there and swapped it out on load, which read as two characters trading places.
+So the page is right offline, under `prefers-reduced-motion`, and if Spline is
+down. Setting `SPLINE_SCENE_URL` to `''` in `lib/spline.ts` drops it entirely.
 
 ## Deployment
 
-Static-first: 37 routes, of which all but `/campaigns/[id]` are prerendered at
-build time. Deploys to any Node or static-capable host with zero configuration
-and zero environment variables.
+Static-first: all but the tracked-link route and the four Stripe endpoints are
+prerendered at build time. Deploys to any Node host with zero configuration.
 
 ```bash
 npx vercel --prod
 ```
 
-Because there are no server secrets and no external services, there is no
-staging/production configuration split and nothing that can expire.
+Environment variables are optional. With none set, the payment surfaces run in
+represented mode and every other route is unaffected — which is a supported
+state, not a degraded one, and the pages say which mode they are in.
+
+| Variable | Required | What it does |
+| --- | --- | --- |
+| `STRIPE_SECRET_KEY` | no | Turns on Connect onboarding and real fee releases. Use a `sk_test_` key. |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | no | Reserved for client-side Elements; nothing needs it yet. |
+| `STRIPE_ALLOW_LIVE` | no | Must be `true` before the build will touch an `sk_live_` key at all. |
+| `NEXT_PUBLIC_SITE_URL` | no | Absolute origin for Stripe redirects. Falls back to `VERCEL_URL`, then the request origin. |
+
+`.env*` is gitignored and `.env.example` carries the names with no values.
+
+## Payments
+
+Stripe Connect, wired up properly rather than mimed — and gated so the build is
+correct with no key at all.
+
+**What is real.** A creator hits *Connect with Stripe* and is sent to Stripe's
+own hosted onboarding, which collects the bank details and the identity
+documents. This build never sees an IBAN and stores only the account id. The
+onboarding state shown afterwards — payouts enabled, what Stripe is still
+waiting on, the masked bank tail — is read back from the Stripe API on every
+visit rather than cached, because those transitions happen on Stripe's side
+while nobody is looking at the tab.
+
+Releasing a fee from the brand's payout ledger creates a **destination charge**:
+the platform takes the payment, Stripe splits it, `application_fee_amount`
+stays with the platform and the remainder lands in the creator's connected
+account. That is the call a production marketplace makes. The only stand-in is
+the card — Stripe's shared `pm_card_visa` test token, because a demo has no
+cardholder to collect from. Charges, fees and transfers all show up in the
+Stripe dashboard.
+
+**Three guards, all deliberate.**
+
+- The build **refuses an `sk_live_` key** unless `STRIPE_ALLOW_LIVE=true`. A
+  public demo that can charge a real card is a liability, not a feature.
+- A missing key is a **supported state**, not an error. Every route answers
+  "not configured" and the UI falls back to the represented flow it shipped
+  with. Nothing 500s.
+- A row only offers *Release* once that creator has actually finished
+  onboarding. There is no destination without an onboarded account, so offering
+  the action would be theatre.
+
+**One demo-shaped compromise, named as such.** `PersistedState.connectedAccounts`
+maps creator id → Stripe account id, because the brand side has to know where a
+fee is going and cannot read the creator's own session. In a real product that
+is a database table. Only the account reference is shared — never anything
+behind it.
+
+### Why there is no LinkedIn integration
+
+Not a scope decision — the API cannot do what the product would need.
+
+`memberFollowersCount` and `memberCreatorPostAnalytics` return data **only for
+the authenticated member**. There is no endpoint that looks up an arbitrary
+person's follower count, so a marketplace browsing 24 creators cannot be
+fetching their stats on demand; naano's numbers must come from creators
+connecting their own account and the results being cached. The seeded data here
+stands in for that cache, not for a call I skipped.
+
+Access is also gated behind the Marketing Developer Platform, which requires a
+verified company page, an established product with real customers, and a 3–4
+month review. *Sign In with LinkedIn* (OpenID Connect) is self-serve and free,
+but returns name, photo and email only — nothing the marketplace needs.
 
 ## The assistant
 
@@ -306,9 +372,13 @@ Everything here is honest about being a demo:
   simulated from each creator's reach and engagement with a realistic CTR curve —
   smaller audiences click harder, which is the product's own claim. Visitor
   company and role on a click are inferred, and labelled as inferred.
-- **Payments are represented, not processed.** The ledger moves through pending →
-  scheduled → paid. No money exists.
-- **Not reproduced:** LinkedIn integration, real payments, the agency side,
+- **Payments are real, in Stripe test mode — or represented, with no key set.**
+  With `STRIPE_SECRET_KEY` configured, creator onboarding is Stripe-hosted
+  Connect and releasing a fee is a genuine destination charge. Without it the
+  ledger still moves through pending → scheduled → paid and no money exists.
+  Both states are labelled on the page. Live mode is refused unless explicitly
+  unlocked.
+- **Not reproduced:** LinkedIn integration, the agency side,
   messaging, blog and SEO pages, the free-tool calculators, the managed-campaigns
   sales funnel, multi-language. Reasons for each are in
   [REVERSE_ENGINEERING.md](REVERSE_ENGINEERING.md) §11 — all scope, not difficulty.

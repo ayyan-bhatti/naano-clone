@@ -46,7 +46,7 @@ await p.waitForURL('**/dashboard', { timeout: 20000 });
 await p.waitForTimeout(1200);
 
 let state = await readState(p);
-check('state is at version 2', state.version === 2, String(state.version));
+check('state is at version 3', state.version === 3, String(state.version));
 check('demo workspace seeds messages', (state.messages || []).length > 0, `${(state.messages || []).length}`);
 
 // The seeded in-review collaboration is what the dashboard should be asking about.

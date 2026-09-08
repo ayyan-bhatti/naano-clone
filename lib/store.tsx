@@ -51,11 +51,12 @@ import type {
 const STORAGE_KEY = 'vouch.state.v1';
 /**
  * Bumped to 2 when drafts, messages, payout methods and creator profile edits
- * were added. State written by an older build is discarded rather than
- * migrated - the alternative is guessing at defaults for fields that never
- * existed, and this is a demo whose seed data is one sign-in away.
+ * were added, and to 3 for the shared Stripe Connect account map. State written
+ * by an older build is discarded rather than migrated - the alternative is
+ * guessing at defaults for fields that never existed, and this is a demo whose
+ * seed data is one sign-in away.
  */
-const STATE_VERSION = 2;
+const STATE_VERSION = 3;
 
 /* ------------------------------------------------------------------ *
  * Defaults
@@ -137,6 +138,7 @@ function emptyState(): PersistedState {
     notifications: [],
     clicks: [],
     messages: [],
+    connectedAccounts: {},
   };
 }
 
@@ -152,6 +154,7 @@ function demoState(): PersistedState {
     notifications: demoNotifications(),
     clicks: [],
     messages: seedMessages(SEED_CAMPAIGNS, creatorNameOf),
+    connectedAccounts: {},
   };
 }
 
@@ -240,6 +243,15 @@ interface StoreValue extends PersistedState {
   // creator profile & payouts
   updateCreatorProfile: (patch: CreatorEdits) => void;
   setPayoutMethod: (method: PayoutMethod | null) => void;
+  /**
+   * Marks one collaboration's fee as released.
+   *
+   * Separate from the campaign-completion sweep because a Stripe release is a
+   * single settled charge for a single creator, and the ledger has to reflect
+   * that the moment Stripe confirms it rather than waiting for the whole
+   * campaign to close.
+   */
+  releasePayout: (campaignId: string, creatorId: string, reference?: string) => void;
   /** The seeded profile with the signed-in creator's own edits applied. */
   applyCreatorEdits: (creator: Creator) => Creator;
   myCreator: Creator | undefined;
@@ -332,6 +344,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
               creatorNameOf,
             )
           : [],
+        connectedAccounts: {},
       }));
     },
     [update],
@@ -804,8 +817,68 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     (method) => {
       update((prev) => {
         if (!prev.user) return prev;
-        return { ...prev, user: { ...prev.user, payoutMethod: method ?? undefined } };
+
+        /*
+          A Stripe account id is also written to the shared map, because the
+          brand side has to be able to see where a fee is going and it cannot
+          read the creator's own session. See PersistedState.connectedAccounts
+          - this is the demo's stand-in for a server-side table, and only the
+          reference is shared, never anything behind it.
+        */
+        const creatorId = prev.user.creatorId;
+        const accounts = { ...prev.connectedAccounts };
+        if (creatorId) {
+          if (method?.type === 'stripe' && method.stripeAccountId) {
+            accounts[creatorId] = method.stripeAccountId;
+          } else {
+            delete accounts[creatorId];
+          }
+        }
+
+        return {
+          ...prev,
+          user: { ...prev.user, payoutMethod: method ?? undefined },
+          connectedAccounts: accounts,
+        };
       });
+    },
+    [update],
+  );
+
+  const releasePayout = useCallback<StoreValue['releasePayout']>(
+    (campaignId, creatorId, reference) => {
+      update((prev) => ({
+        ...prev,
+        campaigns: prev.campaigns.map((c) =>
+          c.id !== campaignId
+            ? c
+            : {
+                ...c,
+                collaborations: c.collaborations.map((collab) =>
+                  collab.creatorId === creatorId
+                    ? { ...collab, payoutStatus: 'paid' as const }
+                    : collab,
+                ),
+              },
+        ),
+        notifications: [
+          {
+            id: `n-payout-${campaignId}-${creatorId}-${Date.now()}`,
+            kind: 'payout' as const,
+            title: 'Fee released',
+            // The Stripe reference is carried into the notification so the
+            // release can be found in the Stripe dashboard afterwards. Without
+            // it the ledger says money moved and gives you no way to check.
+            body: reference
+              ? `Payment sent via Stripe (${reference}).`
+              : 'The fee has been released to the creator.',
+            createdAt: new Date().toISOString(),
+            read: false,
+            href: '/payouts',
+          },
+          ...prev.notifications,
+        ],
+      }));
     },
     [update],
   );
@@ -914,6 +987,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       markThreadRead,
       updateCreatorProfile,
       setPayoutMethod,
+      releasePayout,
       applyCreatorEdits,
       myCreator,
       recordClick,
@@ -945,6 +1019,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       markThreadRead,
       updateCreatorProfile,
       setPayoutMethod,
+      releasePayout,
       applyCreatorEdits,
       myCreator,
       recordClick,

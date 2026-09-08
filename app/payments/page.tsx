@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   Banknote,
   Check,
@@ -22,6 +22,8 @@ import { Button } from '@/components/ui/button';
 import { ConfirmDialog, EmptyState, useToast } from '@/components/ui/feedback';
 import { Field, Input, Select } from '@/components/ui/field';
 import { PayoutStatusPill } from '@/components/ui/status';
+import { StripeConnectCard } from '@/components/payments/stripe-connect';
+import { useStripeAvailability } from '@/lib/stripe/use-stripe';
 import type { PayoutMethod, PayoutMethodType } from '@/lib/types';
 
 /**
@@ -30,10 +32,16 @@ import type { PayoutMethod, PayoutMethodType } from '@/lib/types';
  * Their creator nav has a Payments screen and ours only had Earnings, which
  * meant a creator could see money owed with no way to say where it should go.
  *
- * The important decision here is what is *not* stored: only the last four
- * characters of an account survive. Keeping a full IBAN in localStorage to make
- * a demo feel complete would be the wrong trade, and the page says so rather
- * than hiding it.
+ * There are two ways to get paid here, and which one appears depends on
+ * whether the deployment has a Stripe key.
+ *
+ * With one, Stripe Connect handles it: the creator is sent to a Stripe-hosted
+ * flow, Stripe holds the bank details, and this build keeps an account id.
+ * Without one - which is the state a public demo runs in unless keys are set -
+ * the page falls back to the represented form, where the important decision is
+ * what is *not* stored: only the last four characters of an account survive.
+ * Keeping a full IBAN in localStorage to make a demo feel complete would be the
+ * wrong trade, and the page says which mode it is in rather than hiding it.
  */
 
 const COUNTRIES = [
@@ -92,7 +100,18 @@ function Payments() {
   const { push } = useToast();
   const method = user?.payoutMethod;
 
+  // null until the probe answers; the represented flow renders in the meantime,
+  // because it is a correct thing to show either way.
+  const availability = useStripeAvailability();
+  const stripeOn = availability?.configured === true;
+
   const [removing, setRemoving] = useState(false);
+
+  // Stable: the Connect card syncs the masked tail from a useEffect.
+  const saveMethod = useCallback(
+    (m: PayoutMethod) => setPayoutMethod(m),
+    [setPayoutMethod],
+  );
 
   /** Every fee that is owed, scheduled or already cleared. */
   const ledger = useMemo(
@@ -121,7 +140,25 @@ function Payments() {
     <AppShell title="Payments" subtitle="Where your fees go, and when">
       <div className="mx-auto max-w-3xl space-y-5">
         {/* ---------- Payout method ---------- */}
-        {method ? (
+        {stripeOn && availability ? (
+          <>
+            <StripeConnectCard
+              availability={availability}
+              method={method}
+              countries={COUNTRIES}
+              email={user?.email ?? ''}
+              accountName={user?.name ?? ''}
+              onSave={saveMethod}
+              onRemove={() => setRemoving(true)}
+            />
+            {/* A method saved before Stripe was configured still has to be
+                visible and removable, rather than orphaned behind the new
+                card. */}
+            {method && method.type !== 'stripe' && (
+              <MethodCard method={method} onRemove={() => setRemoving(true)} />
+            )}
+          </>
+        ) : method ? (
           <MethodCard method={method} onRemove={() => setRemoving(true)} />
         ) : (
           <MethodForm
@@ -200,9 +237,20 @@ function Payments() {
 
         <p className="flex items-start gap-1.5 text-[11.5px] leading-relaxed text-ink-faint">
           <Lock className="mt-0.5 size-3 shrink-0" />
-          Payments are represented, not processed. No payment provider is connected to this build, so
-          nothing here moves real money — and only the last four characters of whatever you enter are
-          ever stored.
+          {stripeOn ? (
+            <>
+              Stripe Connect is wired up{availability?.testMode ? ' in test mode' : ''}. Onboarding,
+              account status and fee releases are real Stripe API calls
+              {availability?.testMode ? ', against test money that never leaves Stripe' : ''}. Bank
+              details live at Stripe; this build stores only the account reference.
+            </>
+          ) : (
+            <>
+              Payments are represented, not processed. No payment provider is configured in this
+              deployment, so nothing here moves money — and only the last four characters of
+              whatever you enter are ever stored.
+            </>
+          )}
         </p>
       </div>
 
@@ -227,7 +275,12 @@ function Payments() {
  * ------------------------------------------------------------------ */
 
 function MethodCard({ method, onRemove }: { method: PayoutMethod; onRemove: () => void }) {
-  const Icon = method.type === 'bank' ? Landmark : Banknote;
+  // 'stripe' only reaches this card if a key was configured when the method was
+  // saved and has since gone away. Labelling it PayPal in that state would be a
+  // small lie that is easy to avoid.
+  const Icon = method.type === 'bank' ? Landmark : method.type === 'stripe' ? CreditCard : Banknote;
+  const label =
+    method.type === 'bank' ? 'Bank transfer' : method.type === 'stripe' ? 'Stripe' : 'PayPal';
   return (
     <section className="rounded-[16px] border border-line bg-surface p-5 shadow-card sm:p-6">
       <div className="flex flex-wrap items-center gap-4">
@@ -236,9 +289,7 @@ function MethodCard({ method, onRemove }: { method: PayoutMethod; onRemove: () =
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-[15px] font-semibold tracking-[-0.01em] text-ink">
-              {method.type === 'bank' ? 'Bank transfer' : 'PayPal'}
-            </h2>
+            <h2 className="text-[15px] font-semibold tracking-[-0.01em] text-ink">{label}</h2>
             <span className="inline-flex items-center gap-1 rounded-full bg-money-soft px-2 py-0.5 text-[11px] font-semibold text-money ring-1 ring-inset ring-money/15">
               <ShieldCheck className="size-3" />
               Active

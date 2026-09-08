@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo } from 'react';
-import { Euro, Wallet } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Euro, Loader2, Send, Wallet } from 'lucide-react';
 
 import { formatDate, formatEur } from '@/lib/format';
 import { getCreator } from '@/lib/data/creators';
@@ -11,17 +11,24 @@ import { AppShell, RequireAuth } from '@/components/app-shell';
 import { StatCard } from '@/components/stat-card';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { EmptyState } from '@/components/ui/feedback';
+import { EmptyState, useToast } from '@/components/ui/feedback';
 import { PayoutStatusPill } from '@/components/ui/status';
+import { useStripeAvailability } from '@/lib/stripe/use-stripe';
 import type { PayoutStatus } from '@/lib/types';
 
 /**
  * Payout ledger.
  *
- * Read-only and deliberately the least-built screen in the app - the honest
- * trade for spending that time on the marketplace and campaign flow. It shows
- * the states the real product moves through (pending on invite, scheduled on
- * publish, paid on completion) without pretending to process money.
+ * Shows the states the real product moves through - pending on invite,
+ * scheduled on publish, paid on completion.
+ *
+ * A scheduled fee can also be released directly, and whether that does
+ * anything depends on two things being true: the deployment has a Stripe key,
+ * and the creator has finished Connect onboarding. Both have to hold, because
+ * a release is a destination charge and there is no destination without an
+ * onboarded account. When either is missing the button is absent rather than
+ * disabled-with-a-tooltip - there is nothing the brand can do about it from
+ * this screen, so offering the action would be theatre.
  */
 export default function PayoutsPage() {
   return (
@@ -42,7 +49,52 @@ interface Row {
 }
 
 function PayoutsInner() {
-  const { campaigns } = useStore();
+  const { campaigns, connectedAccounts, releasePayout } = useStore();
+  const { push } = useToast();
+  const availability = useStripeAvailability();
+  const stripeOn = availability?.configured === true;
+
+  /** Which row is mid-flight, so only that button spins. */
+  const [releasing, setReleasing] = useState<string | null>(null);
+
+  async function release(row: Row, accountId: string) {
+    setReleasing(row.key);
+    try {
+      const res = await fetch('/api/stripe/payout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          accountId,
+          // The ledger is in euros; Stripe counts in cents.
+          amountCents: Math.round(row.amount * 100),
+          description: `${row.campaignName} — creator fee`,
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || data?.error) {
+        push({
+          tone: 'error',
+          title: 'Stripe declined the release',
+          body: data?.error ?? 'The charge did not go through.',
+        });
+        return;
+      }
+
+      releasePayout(row.campaignId, row.creatorId, data.paymentIntentId);
+      push({
+        tone: 'success',
+        title: `${formatEur(row.amount)} released`,
+        body: `Destination charge ${data.paymentIntentId} settled${
+          data.livemode ? '' : ' in test mode'
+        }.`,
+      });
+    } catch {
+      push({ tone: 'error', title: 'Could not reach Stripe' });
+    } finally {
+      setReleasing(null);
+    }
+  }
 
   const rows = useMemo<Row[]>(
     () =>
@@ -109,6 +161,9 @@ function PayoutsInner() {
                 {rows.map((row) => {
                   const creator = getCreator(row.creatorId);
                   if (!creator) return null;
+                  // Undefined until this creator has connected Stripe; that is
+                  // what gates the Release button below.
+                  const account = connectedAccounts[row.creatorId];
                   return (
                     <li key={row.key} className="flex flex-wrap items-center gap-3 p-4 sm:px-5">
                       <Avatar seed={creator.avatarSeed} name={creator.name} size="sm" />
@@ -128,6 +183,21 @@ function PayoutsInner() {
                       <span className="tabular w-20 shrink-0 text-right text-[13.5px] font-semibold text-ink">
                         {formatEur(row.amount)}
                       </span>
+                      {stripeOn && row.status === 'scheduled' && account && (
+                        <Button
+                          variant="ghost"
+                          onClick={() => void release(row, account)}
+                          disabled={releasing !== null}
+                          aria-label={`Release ${formatEur(row.amount)} to ${creator.name}`}
+                        >
+                          {releasing === row.key ? (
+                            <Loader2 className="size-4 animate-spin" />
+                          ) : (
+                            <Send className="size-4" />
+                          )}
+                          Release
+                        </Button>
+                      )}
                     </li>
                   );
                 })}
@@ -135,8 +205,20 @@ function PayoutsInner() {
             </section>
 
             <p className="text-[12px] leading-relaxed text-ink-faint">
-              Payments are represented, not processed. There is no payment provider wired into this
-              build — see the README for what is mocked and why.
+              {stripeOn ? (
+                <>
+                  Releases are real Stripe destination charges
+                  {availability?.testMode ? ', in test mode' : ''} — the platform takes the
+                  charge, Stripe splits it, and the creator&apos;s connected account receives the
+                  remainder less the 10% fee. A row only offers Release once that creator has
+                  finished Connect onboarding.
+                </>
+              ) : (
+                <>
+                  Payments are represented, not processed. No Stripe key is configured in this
+                  deployment — see the README for what is mocked and why.
+                </>
+              )}
             </p>
           </>
         )}
