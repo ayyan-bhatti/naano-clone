@@ -15,6 +15,15 @@
  *   node scripts/qa-compare.mjs
  */
 
+/*
+ * Navigation waits use 'domcontentloaded', not 'networkidle'.
+ *
+ * The signup panel embeds a Spline scene that fires roughly sixty requests and
+ * keeps streaming for a dozen seconds. 'networkidle' waits for the network to
+ * go quiet, so once that page exists it either times out or bleeds into the
+ * next navigation on the same page object. Every goto here is followed by an
+ * explicit settle timeout, which is what these assertions actually depend on.
+ */
 import { chromium } from 'playwright';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -72,7 +81,7 @@ async function main() {
     ['naano-pricing', `${REAL}/pricing`],
   ]) {
     try {
-      await real.goto(url, { waitUntil: 'networkidle', timeout: 45000 });
+      await real.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
       // Dismiss the cookie bar so it does not cover the design in every shot.
       for (const label of ['Reject', 'Allow']) {
         const btn = real.getByRole('button', { name: label }).first();
@@ -92,7 +101,7 @@ async function main() {
   const realMobileCtx = await browser.newContext({ viewport: MOBILE, isMobile: true, hasTouch: true });
   const realMobile = await realMobileCtx.newPage();
   try {
-    await realMobile.goto(REAL, { waitUntil: 'networkidle', timeout: 45000 });
+    await realMobile.goto(REAL, { waitUntil: 'domcontentloaded', timeout: 45000 });
     await realMobile.waitForTimeout(1000);
     await shoot(realMobile, 'naano-home-mobile');
   } catch (e) {
@@ -113,14 +122,14 @@ async function main() {
     ['ours-marketplace', '/marketplace'],
     ['ours-sign-up', '/sign-up'],
   ]) {
-    await page.goto(`${LOCAL}${route}`, { waitUntil: 'networkidle', timeout: 45000 });
+    await page.goto(`${LOCAL}${route}`, { waitUntil: 'domcontentloaded', timeout: 45000 });
     await page.waitForTimeout(2200);
     await shoot(page, name);
   }
 
   /* ---------------- Behaviour: the free tools ---------------- */
   console.log('\n--- engagement rate ---');
-  await page.goto(`${LOCAL}/free-tools/engagement-rate`, { waitUntil: 'networkidle' });
+  await page.goto(`${LOCAL}/free-tools/engagement-rate`, { waitUntil: 'domcontentloaded' });
   await page.getByLabel('Follower count').fill('5000');
   await page.getByLabel('Average reactions per post').fill('120');
   await page.getByLabel('Average comments per post').fill('18');
@@ -147,7 +156,7 @@ async function main() {
   check('reset clears the form', (await page.getByLabel('Follower count').inputValue()) === '');
 
   console.log('\n--- creator worth ---');
-  await page.goto(`${LOCAL}/free-tools/creator-worth`, { waitUntil: 'networkidle' });
+  await page.goto(`${LOCAL}/free-tools/creator-worth`, { waitUntil: 'domcontentloaded' });
   await page.getByLabel('Follower count').fill('10000');
   await page.getByLabel('Average reactions per post').fill('300');
   await page.getByLabel('Average comments per post').fill('50');
@@ -160,7 +169,7 @@ async function main() {
   await shoot(page, 'ours-tool-worth-result');
 
   console.log('\n--- campaign budget ---');
-  await page.goto(`${LOCAL}/free-tools/campaign-budget`, { waitUntil: 'networkidle' });
+  await page.goto(`${LOCAL}/free-tools/campaign-budget`, { waitUntil: 'domcontentloaded' });
   await page.getByLabel('Campaign budget (€)').fill('5000');
   await page.waitForTimeout(800);
   body = await page.textContent('body');
@@ -170,7 +179,7 @@ async function main() {
   await shoot(page, 'ours-tool-budget-result', { fullPage: true });
 
   console.log('\n--- delivery odds ---');
-  await page.goto(`${LOCAL}/free-tools/delivery-odds`, { waitUntil: 'networkidle' });
+  await page.goto(`${LOCAL}/free-tools/delivery-odds`, { waitUntil: 'domcontentloaded' });
   await page.getByLabel('Your offer per post (€)').fill('150');
   await page.waitForTimeout(700);
   body = await page.textContent('body');
@@ -180,7 +189,7 @@ async function main() {
   await shoot(page, 'ours-tool-delivery-result');
 
   console.log('\n--- creator search ---');
-  await page.goto(`${LOCAL}/free-tools/creator-search`, { waitUntil: 'networkidle' });
+  await page.goto(`${LOCAL}/free-tools/creator-search`, { waitUntil: 'domcontentloaded' });
   await page.getByLabel('What do you sell?').fill('RevOps automation for sales teams');
   await page.getByLabel('Who do you want to reach?').fill('RevOps managers and sales leaders');
   await page.waitForTimeout(900);
@@ -192,7 +201,7 @@ async function main() {
 
   /* ---------------- Behaviour: auth + crowd ---------------- */
   console.log('\n--- sign-up crowd ---');
-  await page.goto(`${LOCAL}/sign-up`, { waitUntil: 'networkidle' });
+  await page.goto(`${LOCAL}/sign-up`, { waitUntil: 'domcontentloaded' });
   await page.getByRole('button', { name: /I'm a brand/ }).click();
   await page.waitForTimeout(600);
   await page.getByLabel('Full name').fill('Ayyan Bhatti');
@@ -207,7 +216,8 @@ async function main() {
 
   /* ---------------- Mobile ---------------- */
   console.log('\n--- mobile ---');
-  const mCtx = await browser.newContext({ viewport: MOBILE, isMobile: true, hasTouch: true });
+  const mobileBrowser = await chromium.launch();
+  const mCtx = await mobileBrowser.newContext({ viewport: MOBILE, isMobile: true, hasTouch: true });
   const mobile = await mCtx.newPage();
   watchConsole(mobile, 'ours-mobile');
   for (const [name, route] of [
@@ -216,7 +226,7 @@ async function main() {
     ['ours-budget-mobile', '/free-tools/campaign-budget'],
     ['ours-marketplace-mobile', '/marketplace'],
   ]) {
-    await mobile.goto(`${LOCAL}${route}`, { waitUntil: 'networkidle', timeout: 45000 });
+    await mobile.goto(`${LOCAL}${route}`, { waitUntil: 'domcontentloaded', timeout: 45000 });
     await mobile.waitForTimeout(2200);
     await shoot(mobile, name);
     // Horizontal overflow is the classic responsive failure.
@@ -226,9 +236,7 @@ async function main() {
     check(`${name}: no horizontal overflow`, overflow <= 1, `${overflow}px`);
   }
   await mCtx.close();
-
-  await ctx.close();
-  await browser.close();
+  await mobileBrowser.close();
 
   /* ---------------- Report ---------------- */
   const failed = results.checks.filter((c) => !c.ok);

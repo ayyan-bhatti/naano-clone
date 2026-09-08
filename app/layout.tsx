@@ -56,6 +56,15 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={inter.variable}>
+      {/*
+        The signup panel embeds a Spline scene, which pulls its runtime from
+        cdn.spline.design. Warming the connection here shaves the TLS and DNS
+        round-trips off a load that is already the slowest thing on the page.
+      */}
+      <head>
+        <link rel="preconnect" href="https://cdn.spline.design" />
+        <link rel="preconnect" href="https://my.spline.design" />
+      </head>
       <body className="min-h-dvh antialiased">
         <a
           href="#main"

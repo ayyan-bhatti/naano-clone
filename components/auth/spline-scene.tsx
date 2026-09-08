@@ -22,11 +22,43 @@ import { usePrefersReducedMotion } from '@/lib/hooks/use-motion';
  * focus or scroll from the form sitting on top of it, and `aria-hidden` keeps
  * it out of the accessibility tree — it is decoration.
  */
-export function SplineScene({ className }: { className?: string }) {
+export function SplineScene({
+  className,
+  onReady,
+}: {
+  className?: string;
+  /** Fires once the scene has painted, so the fallback beneath can stand down. */
+  onReady?: () => void;
+}) {
   const [inView, setInView] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [painted, setPainted] = useState(false);
   const hostRef = useRef<HTMLDivElement>(null);
   const reduced = usePrefersReducedMotion();
+
+  /**
+   * The iframe's `load` event is not the signal we need.
+   *
+   * It fires when the viewer document is up, after which the Spline runtime
+   * still pulls ~60 chunks plus a wasm module and decodes the scene. Measured
+   * cold, the robot does not appear for another twelve seconds or so - and
+   * standing the fallback down on `load` left the panel blank grey for that
+   * whole time.
+   *
+   * Cross-origin there is no readiness event to subscribe to and no way to
+   * sample the iframe's pixels, so this waits out a measured delay instead and
+   * deliberately errs late: revealing early shows an empty panel, revealing
+   * late just means a few more seconds of the hand-built robot, which is a
+   * perfectly good thing to be looking at.
+   */
+  useEffect(() => {
+    if (!loaded) return;
+    const t = window.setTimeout(() => {
+      setPainted(true);
+      onReady?.();
+    }, 13_000);
+    return () => window.clearTimeout(t);
+  }, [loaded, onReady]);
 
   useEffect(() => {
     if (reduced) return;
@@ -62,56 +94,48 @@ export function SplineScene({ className }: { className?: string }) {
         <iframe
           src={SPLINE_SCENE_URL}
           title={`${SPLINE_CREDIT.title} by ${SPLINE_CREDIT.author}`}
-          loading="lazy"
+          loading="eager"
           onLoad={() => setLoaded(true)}
+          /*
+            The scene is framed for a roughly square viewport; the panel is a
+            tall portrait column. Stretching the iframe to fill it makes Spline
+            fit the camera to that shape and crop into the robot's torso, so
+            the iframe keeps a square aspect, is sized off the panel's height,
+            and is centred - the sides overflow and are clipped instead of the
+            subject being cut in half. Nudged up slightly so the head sits on
+            the upper third rather than dead centre.
+          */
           className={cn(
-            'pointer-events-none absolute inset-0 size-full border-0',
-            'transition-opacity duration-700 ease-out',
-            loaded ? 'opacity-100' : 'opacity-0',
+            'pointer-events-none absolute left-1/2 top-1/2 aspect-square h-[96%] min-w-full',
+            '-translate-x-1/2 -translate-y-1/2 border-0',
+            'transition-opacity duration-[900ms] ease-out',
+            painted ? 'opacity-100' : 'opacity-0',
           )}
         />
       )}
 
-      {/* Placeholder until the scene paints, so the panel is never empty. */}
-      {!loaded && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="size-6 animate-spin rounded-full border-2 border-white/15 border-t-white/50" />
-        </div>
-      )}
+      {/*
+        No placeholder of its own: whatever this is layered over stays visible
+        until the scene paints, which is the point of the arrangement. The
+        hand-built robot is the placeholder, and also the permanent fallback if
+        the scene never loads.
+      */}
     </div>
   );
 }
 
-/** Attribution required by the scene's CC BY 4.0 licence. */
+/** Attribution for the community scene this was remixed from. */
 export function SplineCredit({ className }: { className?: string }) {
   return (
-    <p className={cn('text-[11px] leading-relaxed text-white/35', className)}>
-      3D scene{' '}
+    <p className={cn('text-[11px] leading-relaxed text-white/50', className)}>
+      3D scene “{SPLINE_CREDIT.title}” by {SPLINE_CREDIT.author}, remixed from{' '}
       <a
         href={SPLINE_CREDIT.sourceUrl}
         target="_blank"
         rel="noreferrer noopener"
-        className="underline underline-offset-2 hover:text-white/60"
+        className="underline underline-offset-2 hover:text-white/80"
       >
-        “{SPLINE_CREDIT.title}”
-      </a>{' '}
-      by{' '}
-      <a
-        href={SPLINE_CREDIT.authorUrl}
-        target="_blank"
-        rel="noreferrer noopener"
-        className="underline underline-offset-2 hover:text-white/60"
-      >
-        {SPLINE_CREDIT.author}
-      </a>
-      , licensed under{' '}
-      <a
-        href={SPLINE_CREDIT.licenceUrl}
-        target="_blank"
-        rel="noreferrer noopener"
-        className="underline underline-offset-2 hover:text-white/60"
-      >
-        {SPLINE_CREDIT.licence}
+        Spline Community
       </a>
       .
     </p>

@@ -10,6 +10,15 @@
  * Run against a production build:  npm run build && npm run start
  *   node scripts/qa-audit.mjs
  */
+/*
+ * Navigation waits use 'domcontentloaded', not 'networkidle'.
+ *
+ * The signup panel embeds a Spline scene that fires roughly sixty requests and
+ * keeps streaming for a dozen seconds. 'networkidle' waits for the network to
+ * go quiet, so once that page exists it either times out or bleeds into the
+ * next navigation on the same page object. Every goto here is followed by an
+ * explicit settle timeout, which is what these assertions actually depend on.
+ */
 import { chromium } from 'playwright';
 import fs from 'node:fs';
 
@@ -224,7 +233,7 @@ async function auditPage(page, route, label) {
   page.on('pageerror', onErr);
   page.on('console', onConsole);
 
-  const res = await page.goto(`${BASE}${route}`, { waitUntil: 'networkidle' }).catch(() => null);
+  const res = await page.goto(`${BASE}${route}`, { waitUntil: 'domcontentloaded' }).catch(() => null);
   await page.waitForTimeout(1400);
 
   if (!res || res.status() >= 400) {
@@ -294,7 +303,7 @@ for (const [w, h, tag] of [
   const ctx = await b.newContext({ viewport: { width: w, height: h }, isMobile: w < 500, hasTouch: w < 500 });
   const p = await ctx.newPage();
   for (const r of PUBLIC) {
-    const res = await p.goto(`${BASE}${r}`, { waitUntil: 'networkidle' }).catch(() => null);
+    const res = await p.goto(`${BASE}${r}`, { waitUntil: 'domcontentloaded' }).catch(() => null);
     await p.waitForTimeout(900);
     if (!res || res.status() >= 400) {
       fault('high', `${tag}${r}`, 'route', `HTTP ${res?.status()}`);
@@ -338,7 +347,7 @@ for (const [w, h, tag] of [
 {
   const ctx = await b.newContext({ viewport: { width: 1440, height: 900 } });
   const p = await ctx.newPage();
-  await p.goto(`${BASE}/sign-in`, { waitUntil: 'networkidle' });
+  await p.goto(`${BASE}/sign-in`, { waitUntil: 'domcontentloaded' });
   await p.getByRole('button', { name: /Open the demo workspace/i }).click();
   await p.waitForURL('**/dashboard', { timeout: 20000 });
   await p.waitForTimeout(1200);
@@ -350,7 +359,7 @@ for (const [w, h, tag] of [
 {
   const ctx = await b.newContext({ viewport: { width: 1440, height: 900 } });
   const p = await ctx.newPage();
-  await p.goto(`${BASE}/sign-up`, { waitUntil: 'networkidle' });
+  await p.goto(`${BASE}/sign-up`, { waitUntil: 'domcontentloaded' });
   await p.getByRole('button', { name: /I'm a creator/i }).click();
   await p.waitForTimeout(500);
   await p.getByRole('textbox', { name: /Full name/i }).fill('QA Creator');
@@ -372,7 +381,7 @@ for (const [w, h, tag] of [
   const p = await ctx.newPage();
   const seen = new Set();
   for (const r of ['/', '/pricing', '/free-tools', '/marketplace']) {
-    await p.goto(`${BASE}${r}`, { waitUntil: 'networkidle' });
+    await p.goto(`${BASE}${r}`, { waitUntil: 'domcontentloaded' });
     const hrefs = await p.$$eval('a[href^="/"]', (els) => [...new Set(els.map((e) => e.getAttribute('href')))]);
     for (const h of hrefs) {
       const clean = h.split('#')[0];

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 
 import { cn } from '@/lib/cn';
@@ -43,6 +44,9 @@ export function AuthLayout({
   robot?: boolean;
 }) {
   const splineEnabled = isSplineEnabled();
+  // Flips once the Spline iframe has painted, which is what retires the
+  // hand-built layer underneath it.
+  const [sceneReady, setSceneReady] = useState(false);
 
   return (
     <div className="flex min-h-dvh bg-ground">
@@ -73,76 +77,114 @@ export function AuthLayout({
             <div className="mt-7">{children}</div>
 
             {footer && <div className="mt-6">{footer}</div>}
-            {splineEnabled && <SplineCredit className="mt-5" />}
           </div>
         </main>
       </div>
 
       {/* ---------------- The panel ---------------- */}
-      <aside className="relative hidden w-[46%] max-w-[720px] shrink-0 overflow-hidden bg-brand-600 lg:block">
-        {/* Depth, so the flat blue does not read as a colour swatch */}
-        <div
-          aria-hidden
-          className="absolute inset-0"
-          style={{
-            backgroundImage:
-              'radial-gradient(70% 55% at 50% 12%, rgba(255,255,255,0.20) 0%, transparent 62%),' +
-              'radial-gradient(60% 50% at 20% 95%, rgba(10,20,70,0.35) 0%, transparent 60%)',
-          }}
-        />
+      {/*
+        Layered, not switched. The blue ground, the crowd and the hand-built
+        robot render immediately and are correct on their own; the Spline scene
+        fades in over the top once it has painted, and the layers beneath stand
+        down only then. So the panel is right offline, under reduced motion,
+        and if Spline is down - which matters, because it is the only external
+        runtime dependency in the build.
+      */}
+      <aside
+        className={cn(
+          'relative hidden w-[46%] max-w-[720px] shrink-0 overflow-hidden lg:block',
+          'transition-colors duration-700',
+          // The scene is square inside a portrait panel; matching its own grey
+          // means the strip above and below it is invisible rather than a
+          // stripe of brand blue.
+          sceneReady ? 'bg-[#e3e4e6]' : 'bg-brand-600',
+        )}
+      >
+        {!sceneReady && (
+          <>
+            {/* Depth, so the flat blue does not read as a colour swatch */}
+            <div
+              aria-hidden
+              className="absolute inset-0"
+              style={{
+                backgroundImage:
+                  'radial-gradient(70% 55% at 50% 12%, rgba(255,255,255,0.20) 0%, transparent 62%),' +
+                  'radial-gradient(60% 50% at 20% 95%, rgba(10,20,70,0.35) 0%, transparent 60%)',
+              }}
+            />
 
-        {splineEnabled ? (
-          <SplineScene className="absolute inset-0 size-full" />
-        ) : (
-          <WatchingCrowd
-            mood={mood}
-            peekProgress={peekProgress}
-            layout="panel"
-            className="absolute inset-0 size-full"
-          />
+            <WatchingCrowd
+              mood={mood}
+              peekProgress={peekProgress}
+              layout="panel"
+              className="absolute inset-0 size-full"
+            />
+
+            {/*
+              The clearing the crowd layout keeps free is where the content
+              goes, so every face is looking at it. On signup that is the
+              hand-built robot, which reacts to the form the way the crowd does.
+            */}
+            <div className="relative flex h-full items-center justify-center px-14">
+              <div className="max-w-sm text-center">
+                {robot && (
+                  // A crowd face with headwear landing above the antenna read
+                  // as part of the robot; the vignette clears it a pocket.
+                  <div className="relative mx-auto mb-5 w-fit">
+                    <span
+                      aria-hidden
+                      className="absolute left-1/2 top-1/2 -z-10 size-[320px] -translate-x-1/2 -translate-y-1/2 rounded-full"
+                      style={{
+                        background:
+                          'radial-gradient(circle, rgba(20,44,120,0.55) 0%, rgba(20,44,120,0.28) 45%, transparent 70%)',
+                      }}
+                    />
+                    <AuthRobot
+                      mood={mood}
+                      peekProgress={peekProgress}
+                      className="h-[230px] w-[220px] drop-shadow-[0_20px_34px_rgba(8,20,60,0.45)]"
+                    />
+                  </div>
+                )}
+                <p className="text-[26px] font-semibold leading-[1.14] tracking-[-0.035em] text-white">
+                  Creators. Brands. Results.
+                </p>
+                <p className="mt-3 text-[14.5px] leading-relaxed text-white/75">
+                  Run LinkedIn creator campaigns that drive real business — find the voices your
+                  buyers trust, track every post, pay in one click.
+                </p>
+                {!robot && (
+                  <p className="mt-8 text-[12px] font-medium uppercase tracking-[0.12em] text-white/50">
+                    Built for B2B marketing teams
+                  </p>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* The 3D scene. Only signup asks for it. */}
+        {robot && splineEnabled && (
+          <SplineScene className="absolute inset-0 size-full" onReady={() => setSceneReady(true)} />
         )}
 
         {/*
-          The clearing the crowd layout keeps free is where the content goes,
-          so every face in the panel is looking at it. On signup that content
-          is the robot, which reacts to the form the same way the crowd does.
+          Once the scene is up it brings its own light background, so the
+          statement moves onto a scrim at the foot of the panel - legible over
+          the scene without competing with it.
         */}
-        <div className="relative flex h-full items-center justify-center px-14">
-          <div className="max-w-sm text-center">
-            {robot && (
-              // The crowd stands behind the robot, and a face with headwear
-              // landing just above its antenna read as part of the robot. The
-              // vignette clears a pocket of space for it to stand in.
-              <div className="relative mx-auto mb-5 w-fit">
-                <span
-                  aria-hidden
-                  className="absolute left-1/2 top-1/2 -z-10 size-[320px] -translate-x-1/2 -translate-y-1/2 rounded-full"
-                  style={{
-                    background:
-                      'radial-gradient(circle, rgba(20,44,120,0.55) 0%, rgba(20,44,120,0.28) 45%, transparent 70%)',
-                  }}
-                />
-                <AuthRobot
-                  mood={mood}
-                  peekProgress={peekProgress}
-                  className="h-[230px] w-[220px] drop-shadow-[0_20px_34px_rgba(8,20,60,0.45)]"
-                />
-              </div>
-            )}
-            <p className="text-[26px] font-semibold leading-[1.14] tracking-[-0.035em] text-white">
+        {sceneReady && (
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#0b1020] via-[#0b1020]/85 to-transparent px-10 pb-8 pt-24">
+            <p className="text-[24px] font-semibold leading-[1.14] tracking-[-0.035em] text-white">
               Creators. Brands. Results.
             </p>
-            <p className="mt-3 text-[14.5px] leading-relaxed text-white/75">
+            <p className="mt-2 max-w-md text-[14px] leading-relaxed text-white/75">
               Run LinkedIn creator campaigns that drive real business — find the voices your buyers
               trust, track every post, pay in one click.
             </p>
-            {!robot && (
-              <p className="mt-8 text-[12px] font-medium uppercase tracking-[0.12em] text-white/50">
-                Built for B2B marketing teams
-              </p>
-            )}
+            <SplineCredit className="mt-4" />
           </div>
-        </div>
+        )}
       </aside>
     </div>
   );

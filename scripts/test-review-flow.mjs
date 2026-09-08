@@ -8,6 +8,15 @@
  *
  * Run against a production build:  npm run build && npm start
  */
+/*
+ * Navigation waits use 'domcontentloaded', not 'networkidle'.
+ *
+ * The signup panel embeds a Spline scene that fires roughly sixty requests and
+ * keeps streaming for a dozen seconds. 'networkidle' waits for the network to
+ * go quiet, so once that page exists it either times out or bleeds into the
+ * next navigation on the same page object. Every goto here is followed by an
+ * explicit settle timeout, which is what these assertions actually depend on.
+ */
 import { chromium } from 'playwright';
 
 const BASE = process.env.LOCAL_URL ?? 'http://localhost:3000';
@@ -31,7 +40,7 @@ p.on('pageerror', (e) => errors.push(e.message));
  * Brand side: review and approve
  * ------------------------------------------------------------------ */
 
-await p.goto(`${BASE}/sign-in`, { waitUntil: 'networkidle' });
+await p.goto(`${BASE}/sign-in`, { waitUntil: 'domcontentloaded' });
 await p.getByRole('button', { name: /Open the demo workspace/i }).click();
 await p.waitForURL('**/dashboard', { timeout: 20000 });
 await p.waitForTimeout(1200);
@@ -100,7 +109,7 @@ await p.evaluate((ids) => {
   localStorage.setItem('vouch.state.v1', JSON.stringify(s));
 }, { campaignId: target.campaign.id, creatorId: target.collab.creatorId });
 
-await p.goto(`${BASE}/campaigns/${target.campaign.id}`, { waitUntil: 'networkidle' });
+await p.goto(`${BASE}/campaigns/${target.campaign.id}`, { waitUntil: 'domcontentloaded' });
 await p.waitForTimeout(1400);
 body = await p.textContent('body');
 check('campaign page shows the drafts-waiting banner', /waiting on you/i.test(body));
@@ -135,7 +144,7 @@ check('no NaN after approval', !body.includes('NaN'));
  * Messaging
  * ------------------------------------------------------------------ */
 
-await p.goto(`${BASE}/messages`, { waitUntil: 'networkidle' });
+await p.goto(`${BASE}/messages`, { waitUntil: 'domcontentloaded' });
 await p.waitForTimeout(1400);
 body = await p.textContent('body');
 check('messages lists conversations', /conversations|unread/i.test(body));
@@ -166,7 +175,7 @@ check('the reply answers the question asked', /(date|timing|Tuesday|slot|hit tha
  * Pricing page
  * ------------------------------------------------------------------ */
 
-await p.goto(`${BASE}/pricing`, { waitUntil: 'networkidle' });
+await p.goto(`${BASE}/pricing`, { waitUntil: 'domcontentloaded' });
 await p.waitForTimeout(900);
 // innerText, not textContent: the latter includes the RSC flight payload in
 // <script>, which legitimately contains "$undefined" markers.

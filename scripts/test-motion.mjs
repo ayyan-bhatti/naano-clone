@@ -10,6 +10,15 @@
  *
  * Run against a production build:  npm run build && npm start
  */
+/*
+ * Navigation waits use 'domcontentloaded', not 'networkidle'.
+ *
+ * The signup panel embeds a Spline scene that fires roughly sixty requests and
+ * keeps streaming for a dozen seconds. 'networkidle' waits for the network to
+ * go quiet, so once that page exists it either times out or bleeds into the
+ * next navigation on the same page object. Every goto here is followed by an
+ * explicit settle timeout, which is what these assertions actually depend on.
+ */
 import { chromium } from 'playwright';
 
 const BASE = process.env.LOCAL_URL ?? 'http://localhost:3000';
@@ -48,7 +57,7 @@ const minOpacity = (page, sel) =>
   p.on('pageerror', (e) => errors.push(e.message));
   p.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
 
-  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.goto(BASE, { waitUntil: 'domcontentloaded' });
 
   // The hero must resolve without any scrolling at all.
   await p.waitForTimeout(2600);
@@ -138,7 +147,7 @@ const minOpacity = (page, sel) =>
   p.on('pageerror', (e) => errors.push(e.message));
   p.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
 
-  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.goto(BASE, { waitUntil: 'domcontentloaded' });
   await p.waitForTimeout(600);
 
   // Nothing should have been touched: no splitting, no hidden starting state.
@@ -177,7 +186,7 @@ const minOpacity = (page, sel) =>
   const errors = [];
   p.on('pageerror', (e) => errors.push(e.message));
 
-  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.goto(BASE, { waitUntil: 'domcontentloaded' });
   await p.waitForTimeout(2200);
   await p.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await p.waitForTimeout(1800);

@@ -1,49 +1,39 @@
 /**
- * Spline scene configuration for the auth pages.
+ * Spline scene configuration for the signup panel.
  *
- * ── To turn this on ───────────────────────────────────────────────────────
+ * ── What this is ─────────────────────────────────────────────────────────
  *
- * 1. Open the scene:  https://app.spline.design/community/file/7f09bdc4-93c5-496e-b9fe-3505948c7721
- * 2. Click **Remix** (it is CC BY 4.0, so this is permitted — credit is set below)
- * 3. In your copy: **Export → Public site / iframe**, and copy the URL.
- *    It looks like `https://my.spline.design/<slug>/`
- * 4. Paste it into SPLINE_SCENE_URL below. That is the only change needed.
+ * The published viewer URL for a remixed "Nexbot" scene. Spline inlines the
+ * scene data into that page rather than serving a fetchable `.splinecode`
+ * (both `my.spline.design/<slug>/scene.splinecode` and the `prod.` host return
+ * 403), so there is nothing for `@splinetool/react-spline` to load. The
+ * official iframe embed is the supported path, and it is also the cheaper one:
+ * the React package pulls a ~1.5MB runtime into our bundle, whereas the iframe
+ * keeps all of it out of our JS and loads only on one page, only when visible.
  *
- * The URL cannot be derived from the community link: the community viewer
- * fetches the scene through Spline's own API, and the file has no public
- * address until it is remixed and exported. Verified — it is not in the page
- * source, and prod/my/draft.spline.design all reject the community UUID.
+ * ── The trade this makes ─────────────────────────────────────────────────
  *
- * ── Why an iframe rather than @splinetool/react-spline ───────────────────
+ * This is the one external runtime dependency in the build. Everything else
+ * works offline with no keys; this does not — it needs cdn.spline.design and
+ * my.spline.design to be up. That is why it is layered rather than swapped in:
+ * the hand-built robot and crowd render first and stay if the scene never
+ * arrives, so the panel is correct offline, under reduced motion, and if
+ * Spline is down. Set SPLINE_SCENE_URL to '' to drop the dependency entirely.
  *
- * The React package pulls a ~1.5MB runtime into the bundle. The official
- * iframe embed does the same job with zero npm dependencies, stays out of our
- * JS entirely, and is trivially lazy-loaded. Given the whole build is staked on
- * having no external runtime dependency, keeping this to an iframe that loads
- * only on two pages — and only when configured — is the smaller compromise.
- *
- * ── What you lose by switching this on ──────────────────────────────────
- *
- * The Spline scene is a looping animation, not an interactive one (its own
- * comments ask the author to make it follow the cursor; it does not). Embedded
- * cross-origin, it cannot see which field is focused, so the watch-while-you-
- * type, eyes-shut-on-password and sneak-a-peek behaviour does not apply to it.
- * Leaving SPLINE_SCENE_URL empty keeps the hand-built crowd, which does.
- *
- * Both paths are live code. This constant picks between them.
+ * Cross-origin, the iframe also cannot see which field is focused, so the
+ * watch-while-you-type and eyes-shut-on-password behaviour belongs to the
+ * hand-built layer underneath it and to the crowd on the sign-in page.
  */
 
-/** Paste the exported `https://my.spline.design/<slug>/` URL here. */
-export const SPLINE_SCENE_URL = '';
+/** Published Spline viewer URL. Empty string disables the embed entirely. */
+export const SPLINE_SCENE_URL =
+  'https://my.spline.design/nexbotbyaximoriscopycopy-UvoQSKmZpwu8lIFxuUb4Cp4g/';
 
-/** Required by the scene's CC BY 4.0 licence whenever the embed is shown. */
+/** Attribution for the original community scene this was remixed from. */
 export const SPLINE_CREDIT = {
-  title: '100 followers',
-  author: 'heyvlad',
-  authorUrl: 'https://community.spline.design/@heyvlad',
-  sourceUrl: 'https://community.spline.design/file/7f09bdc4-93c5-496e-b9fe-3505948c7721',
-  licence: 'CC BY 4.0',
-  licenceUrl: 'https://creativecommons.org/licenses/by/4.0/',
+  title: 'Nexbot',
+  author: 'Aximoris',
+  sourceUrl: 'https://community.spline.design/',
 };
 
 export function isSplineEnabled(): boolean {
