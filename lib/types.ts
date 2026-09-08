@@ -179,6 +179,34 @@ export interface Notification {
   href?: string;
 }
 
+/**
+ * A real click on a tracked link.
+ *
+ * Device and referrer are genuinely observed from the browser. The visitor
+ * identity fields are synthesised - a real product resolves these from IP
+ * intelligence, and the UI labels them as inferred rather than claiming they
+ * were looked up.
+ */
+export interface ClickEvent {
+  id: string;
+  campaignId: string;
+  /** Which creator's link variant was used; null for the campaign-level link. */
+  creatorId: string | null;
+  code: string;
+  timestamp: string;
+  /** Observed. 'direct' when there is no referrer. */
+  referrer: string;
+  /** Observed from the user agent. */
+  device: 'desktop' | 'mobile' | 'tablet';
+  /** Inferred, not looked up. */
+  company: string;
+  role: string;
+  /** Deterministically derived from the click id - a fixed share convert. */
+  isLead: boolean;
+  /** Attributed pipeline in EUR when isLead, else 0. */
+  pipeline: number;
+}
+
 /** Everything persisted to localStorage under one versioned key. */
 export interface PersistedState {
   version: number;
@@ -186,4 +214,6 @@ export interface PersistedState {
   campaigns: Campaign[];
   shortlist: string[];
   notifications: Notification[];
+  /** Real clicks recorded by the /l/[code] route. */
+  clicks: ClickEvent[];
 }

@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test:calculators": "node --experimental-strip-types --import ./scripts/alias-hook-register.mjs scripts/test-calculators.ts"
+    "test:calculators": "node --experimental-strip-types --import ./scripts/alias-hook-register.mjs scripts/test-calculators.ts",
+    "test:tracking": "node scripts/test-tracking.mjs",
+    "qa": "node scripts/qa-compare.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

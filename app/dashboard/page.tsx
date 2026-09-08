@@ -16,7 +16,7 @@ import {
 
 import { ctr, formatCompact, formatEur, formatNumber } from '@/lib/format';
 import { getCreator } from '@/lib/data/creators';
-import { aggregateMetrics, campaignMetrics, trendDelta } from '@/lib/metrics';
+import { aggregateMetricsWithClicks, campaignMetrics, trendDelta } from '@/lib/metrics';
 import { useStore } from '@/lib/store';
 import { AppShell, RequireAuth } from '@/components/app-shell';
 import { CreatorOverview } from '@/components/creator/creator-screens';
@@ -58,9 +58,10 @@ function DashboardRouter() {
 }
 
 function DashboardInner() {
-  const { user, campaigns, shortlist } = useStore();
+  const { user, campaigns, shortlist, clicks } = useStore();
 
-  const totals = useMemo(() => aggregateMetrics(campaigns), [campaigns]);
+  // Includes any real tracked-link clicks, so opening a link moves the dashboard.
+  const totals = useMemo(() => aggregateMetricsWithClicks(campaigns, clicks), [campaigns, clicks]);
 
   const activeCampaigns = campaigns.filter((c) => c.status === 'live' || c.status === 'scheduled');
 
@@ -211,7 +212,11 @@ function DashboardInner() {
               label="Clicks"
               value={totals.clicks}
               format="number"
-              caption={`${ctr(totals.clicks, totals.impressions)} click-through rate`}
+              caption={
+                totals.liveClicks > 0
+                  ? `${ctr(totals.clicks, totals.impressions)} CTR · ${totals.liveClicks} live`
+                  : `${ctr(totals.clicks, totals.impressions)} click-through rate`
+              }
               icon={MousePointerClick}
               spark={combined.map((p) => p.clicks)}
             />

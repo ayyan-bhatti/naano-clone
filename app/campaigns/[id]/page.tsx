@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import {
   ArrowLeft,
+  ArrowRight,
   Check,
   Copy,
   Euro,
@@ -18,9 +19,16 @@ import {
 } from 'lucide-react';
 
 import { cn } from '@/lib/cn';
-import { ctr, formatDate, formatEur, formatNumber } from '@/lib/format';
+import { ctr, formatDate, formatEur, formatNumber, relativeTime } from '@/lib/format';
 import { getCreator } from '@/lib/data/creators';
-import { campaignMetrics } from '@/lib/metrics';
+import { campaignMetricsWithClicks } from '@/lib/metrics';
+import {
+  absoluteLink,
+  campaignLinkPath,
+  creatorLinkPath,
+  displayLink,
+  statsForCreator,
+} from '@/lib/tracking';
 import { OBJECTIVE_LABELS } from '@/lib/brief';
 import { useStore } from '@/lib/store';
 import { AppShell, RequireAuth } from '@/components/app-shell';
@@ -47,7 +55,8 @@ export default function CampaignDetailPage() {
 
 function CampaignDetailInner() {
   const params = useParams<{ id: string }>();
-  const { campaigns, setCampaignStatus, setCollaborationStatus, removeCreatorFromCampaign } = useStore();
+  const { campaigns, clicks, setCampaignStatus, setCollaborationStatus, removeCreatorFromCampaign } =
+    useStore();
   const { push } = useToast();
 
   const [confirmLaunch, setConfirmLaunch] = useState(false);
@@ -55,7 +64,16 @@ function CampaignDetailInner() {
   const [copied, setCopied] = useState(false);
 
   const campaign = campaigns.find((c) => c.id === params.id);
-  const metrics = useMemo(() => (campaign ? campaignMetrics(campaign) : null), [campaign]);
+  const metrics = useMemo(
+    () => (campaign ? campaignMetricsWithClicks(campaign, clicks) : null),
+    [campaign, clicks],
+  );
+
+  // Newest first, for the live event feed.
+  const campaignClicks = useMemo(
+    () => (campaign ? clicks.filter((c) => c.campaignId === campaign.id) : []),
+    [clicks, campaign],
+  );
 
   if (!campaign || !metrics) {
     return (
@@ -76,7 +94,7 @@ function CampaignDetailInner() {
     );
   }
 
-  const trackedLink = `vouch.link/${campaign.brief.trackingCode}`;
+  const trackedLink = displayLink(campaign);
   const published = campaign.collaborations.filter((c) => c.status === 'published');
 
   function transition(status: CampaignStatus) {
@@ -106,9 +124,11 @@ function CampaignDetailInner() {
 
   async function copyLink() {
     try {
-      await navigator.clipboard.writeText(`https://${trackedLink}`);
+      // Copy the absolute URL, not the display form — a link that cannot be
+      // pasted into a browser is not a tracked link.
+      await navigator.clipboard.writeText(absoluteLink(campaign!));
       setCopied(true);
-      push({ tone: 'success', title: 'Tracked link copied' });
+      push({ tone: 'success', title: 'Tracked link copied', body: 'Open it to record a click.' });
       window.setTimeout(() => setCopied(false), 2000);
     } catch {
       push({ tone: 'error', title: 'Could not copy', body: 'Your browser blocked clipboard access.' });
@@ -188,6 +208,18 @@ function CampaignDetailInner() {
                   {copied ? <Check className="size-3.5 text-money" /> : <Copy className="size-3.5" />}
                 </button>
               </div>
+              <Link
+                href={campaignLinkPath(campaign)}
+                className="mt-2.5 inline-flex items-center gap-1.5 text-[12.5px] font-medium text-brand-600 hover:underline"
+              >
+                Open it and record a click
+                <ArrowRight className="size-3" />
+              </Link>
+              {metrics.liveClicks > 0 && (
+                <p className="tabular mt-1.5 text-[11.5px] text-money">
+                  {metrics.liveClicks} live click{metrics.liveClicks === 1 ? '' : 's'} recorded
+                </p>
+              )}
             </div>
           </div>
         </section>
@@ -300,6 +332,33 @@ function CampaignDetailInner() {
                           <PayoutStatusPill status={collab.payoutStatus} />
                           <span className="tabular text-[12.5px] font-medium text-ink">{formatEur(collab.fee)}</span>
                         </div>
+
+                        {/*
+                          Each creator gets their own link variant. This is how a
+                          click is attributed to the specific post that drove it,
+                          rather than to the campaign as a whole.
+                        */}
+                        {collab.status === 'published' && (
+                          <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                            <Link
+                              href={creatorLinkPath(campaign, collab.creatorId)}
+                              className="inline-flex items-center gap-1.5 rounded-full border border-line bg-sunken/60 px-2.5 py-1 text-[11.5px] font-medium text-ink-soft transition-colors hover:border-brand-300 hover:text-brand-700"
+                            >
+                              <Link2 className="size-3" />
+                              {displayLink(campaign, collab.creatorId)}
+                            </Link>
+                            {(() => {
+                              const live = statsForCreator(clicks, campaign.id, collab.creatorId);
+                              if (live.clicks === 0) return null;
+                              return (
+                                <span className="tabular rounded-full bg-money-soft px-2 py-1 text-[11px] font-semibold text-money">
+                                  +{live.clicks} live
+                                  {live.leads > 0 ? ` · ${live.leads} lead${live.leads === 1 ? '' : 's'}` : ''}
+                                </span>
+                              );
+                            })()}
+                          </div>
+                        )}
                       </div>
 
                       {/* Per-creator performance */}
@@ -343,6 +402,84 @@ function CampaignDetailInner() {
               })}
             </ul>
           )}
+        </section>
+
+        {/* ---------- Live tracked clicks ---------- */}
+        <section className="overflow-hidden rounded-[16px] border border-line bg-surface shadow-card">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line p-5">
+            <div>
+              <h2 className="flex items-center gap-2 text-[15px] font-semibold tracking-[-0.01em] text-ink">
+                <Link2 className="size-4 text-brand-600" />
+                Live tracked clicks
+              </h2>
+              <p className="mt-0.5 text-[12.5px] text-ink-muted">
+                Real events recorded by the tracked link — not part of the simulated history.
+              </p>
+            </div>
+            {campaignClicks.length > 0 && (
+              <span className="tabular rounded-full bg-money-soft px-2.5 py-1 text-[12px] font-semibold text-money">
+                {campaignClicks.length} recorded
+              </span>
+            )}
+          </div>
+
+          {campaignClicks.length === 0 ? (
+            <div className="p-6 text-center">
+              <p className="text-[13.5px] text-ink-soft">No clicks recorded yet.</p>
+              <p className="mx-auto mt-1.5 max-w-md text-[12.5px] leading-relaxed text-ink-muted">
+                Open the campaign link above, or a creator&apos;s own variant below, and the click
+                lands here — with the device and referrer read from your browser, and this
+                campaign&apos;s totals moving to match.
+              </p>
+              <Link href={campaignLinkPath(campaign)} className="mt-4 inline-block">
+                <Button size="sm">
+                  Open the tracked link
+                  <ArrowRight className="size-3.5" />
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <ul className="divide-y divide-line">
+              {campaignClicks.slice(0, 8).map((click) => {
+                const creator = click.creatorId ? getCreator(click.creatorId) : undefined;
+                return (
+                  <li key={click.id} className="flex flex-wrap items-center gap-3 p-4 sm:px-5">
+                    <span
+                      className={cn(
+                        'flex size-8 shrink-0 items-center justify-center rounded-full',
+                        click.isLead ? 'bg-money-soft text-money' : 'bg-sunken text-ink-muted',
+                      )}
+                    >
+                      <MousePointerClick className="size-4" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[13.5px] font-medium text-ink">
+                        {click.role}, {click.company}
+                      </p>
+                      <p className="truncate text-[12px] text-ink-muted">
+                        {creator ? `via ${creator.name}` : 'campaign link'} · {click.device} ·{' '}
+                        {click.referrer} · {relativeTime(click.timestamp)}
+                      </p>
+                    </div>
+                    {click.isLead ? (
+                      <span className="tabular shrink-0 rounded-full bg-money-soft px-2.5 py-1 text-[11.5px] font-semibold text-money">
+                        Lead · {formatEur(click.pipeline)}
+                      </span>
+                    ) : (
+                      <span className="shrink-0 rounded-full bg-sunken px-2.5 py-1 text-[11.5px] text-ink-muted">
+                        Click
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+
+          <p className="border-t border-line bg-sunken/40 px-5 py-3 text-[11.5px] leading-relaxed text-ink-faint">
+            Device and referrer are observed from the browser. Visitor company and role are inferred —
+            a production build resolves those from IP intelligence, which would be an external service.
+          </p>
         </section>
 
         {/* ---------- Brief ---------- */}

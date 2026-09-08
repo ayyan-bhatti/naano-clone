@@ -11,6 +11,7 @@ import {
 } from 'react';
 
 import { digestsMatch } from '@/lib/auth';
+import { createClickEvent } from '@/lib/tracking';
 import { generateBrief, makeTrackingCode } from '@/lib/brief';
 import { DEMO_COMPANY, DEMO_DOMAIN, SEED_CAMPAIGNS } from '@/lib/data/campaigns';
 import { CREATORS, getCreator } from '@/lib/data/creators';
@@ -19,6 +20,7 @@ import type {
   Campaign,
   CampaignStatus,
   Collaboration,
+  ClickEvent,
   CollaborationStatus,
   Notification,
   Objective,
@@ -121,6 +123,7 @@ function emptyState(): PersistedState {
     campaigns: [],
     shortlist: [],
     notifications: [],
+    clicks: [],
   };
 }
 
@@ -189,6 +192,9 @@ interface StoreValue extends PersistedState {
   ) => void;
   addCreatorsToCampaign: (campaignId: string, creatorIds: string[]) => void;
   removeCreatorFromCampaign: (campaignId: string, creatorId: string) => void;
+  // tracking
+  recordClick: (input: { campaignId: string; creatorId: string | null; code: string }) => ClickEvent;
+  clearClicks: () => void;
   // notifications
   markNotificationRead: (id: string) => void;
   markAllNotificationsRead: () => void;
@@ -262,6 +268,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
               },
             ]
           : [],
+        clicks: [],
       }));
     },
     [update],
@@ -287,6 +294,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         campaigns: SEED_CAMPAIGNS,
         shortlist: ['marta-ferreira', 'tomas-loucky', 'clara-nowak'],
         notifications: demoNotifications(),
+        clicks: [],
       });
       return 'ok';
     }
@@ -305,6 +313,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       campaigns: SEED_CAMPAIGNS,
       shortlist: ['marta-ferreira', 'tomas-loucky', 'clara-nowak'],
       notifications: demoNotifications(),
+      clicks: [],
     });
   }, []);
 
@@ -531,6 +540,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [update],
   );
 
+  /* ---------------- tracking ---------------- */
+
+  /**
+   * Records a real click from the /l/[code] route.
+   *
+   * The event is returned as well as stored so the redirect page can show
+   * exactly what was captured - seeing the attribution land is the whole point
+   * of the interstitial.
+   */
+  const recordClick = useCallback<StoreValue['recordClick']>((input) => {
+    const event = createClickEvent(input);
+    update((prev) => ({ ...prev, clicks: [event, ...prev.clicks].slice(0, 500) }));
+    return event;
+  }, [update]);
+
+  const clearClicks = useCallback(() => {
+    update((prev) => ({ ...prev, clicks: [] }));
+  }, [update]);
+
   /* ---------------- notifications ---------------- */
 
   const markNotificationRead = useCallback<StoreValue['markNotificationRead']>(
@@ -577,6 +605,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setCollaborationStatus,
       addCreatorsToCampaign,
       removeCreatorFromCampaign,
+      recordClick,
+      clearClicks,
       markNotificationRead,
       markAllNotificationsRead,
       resetDemo,
@@ -597,6 +627,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setCollaborationStatus,
       addCreatorsToCampaign,
       removeCreatorFromCampaign,
+      recordClick,
+      clearClicks,
       markNotificationRead,
       markAllNotificationsRead,
       resetDemo,

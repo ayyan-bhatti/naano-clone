@@ -1,7 +1,9 @@
 import { getCreator } from '@/lib/data/creators';
+import { statsForCampaign, totalStats } from '@/lib/tracking';
 import type {
   Campaign,
   CampaignMetrics,
+  ClickEvent,
   Collaboration,
   CollaborationMetrics,
   DailyPoint,
@@ -81,6 +83,51 @@ export function campaignMetrics(campaign: Campaign): CampaignMetrics {
     },
     { impressions: 0, clicks: 0, leads: 0, pipeline: 0, spend: 0 },
   );
+}
+
+/**
+ * Campaign totals including real tracked-link clicks.
+ *
+ * The simulated baseline represents historical performance; clicks recorded by
+ * the /l/[code] route are added on top. Keeping them additive rather than
+ * replacing the baseline means a single click visibly moves the number without
+ * wiping out the campaign's history - and the UI breaks out how many of the
+ * total are live, so the two are never conflated.
+ */
+export function campaignMetricsWithClicks(
+  campaign: Campaign,
+  clicks: ClickEvent[],
+): CampaignMetrics & { liveClicks: number; liveLeads: number; livePipeline: number } {
+  const base = campaignMetrics(campaign);
+  const live = statsForCampaign(clicks, campaign.id);
+
+  return {
+    impressions: base.impressions,
+    clicks: base.clicks + live.clicks,
+    leads: base.leads + live.leads,
+    pipeline: base.pipeline + live.pipeline,
+    spend: base.spend,
+    liveClicks: live.clicks,
+    liveLeads: live.leads,
+    livePipeline: live.pipeline,
+  };
+}
+
+/** Aggregate across many campaigns, including any real clicks. */
+export function aggregateMetricsWithClicks(
+  campaigns: Campaign[],
+  clicks: ClickEvent[],
+): CampaignMetrics & { liveClicks: number } {
+  const base = aggregateMetrics(campaigns);
+  const live = totalStats(clicks);
+  return {
+    impressions: base.impressions,
+    clicks: base.clicks + live.clicks,
+    leads: base.leads + live.leads,
+    pipeline: base.pipeline + live.pipeline,
+    spend: base.spend,
+    liveClicks: live.clicks,
+  };
 }
 
 /** Aggregate across many campaigns, for the dashboard. */

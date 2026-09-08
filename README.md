@@ -39,7 +39,11 @@ this were a real product decision.
 - **Campaign creation** — four steps, per-step validation, live budget tracking,
   and a brief generated from your inputs and your chosen creators
 - **Campaign management** — draft → scheduled → live → completed, per-creator
-  accept/publish, tracked link, per-creator performance, payout states
+  accept/publish, per-creator performance, payout states
+- **Working tracked links** — `/l/[code]` resolves to a campaign, attributes the
+  click to the creator whose variant was used, records a real event (timestamp,
+  referrer, device), and the campaign and dashboard totals move because they read
+  those rows. Not a simulation.
 - **Dashboard** — pipeline, impressions, clicks, leads, spend, trend chart
 - **Payouts** — read-only ledger across every campaign
 - **Settings** — edit the buyer profile and watch the marketplace re-rank
@@ -171,6 +175,8 @@ npm run start        # serve the build
 npm run lint             # eslint
 npm run typecheck        # tsc --noEmit
 npm run test:calculators # 1061 assertions over the pure calculators
+npm run test:tracking    # 14 browser assertions that tracked links record events
+npm run qa               # visual + behavioural QA vs naano.com (needs Playwright)
 ```
 
 Node 20+. No `.env` file, no API keys, nothing to configure.
@@ -230,10 +236,12 @@ Everything here is honest about being a demo:
 - **Creators are fictional.** Names, bios and posts are written for this build.
   Stats are derived deterministically, anchored to the price bands Naano
   publishes (median €84 under 5K followers, €180 at 5–10K, €312 at 10–25K).
-- **Metrics are simulated, not observed.** Derived from each creator's reach and
-  engagement with a realistic CTR curve — smaller audiences click harder, which is
-  the product's own claim. They are internally consistent and respond to your
-  actions, but no click was ever tracked.
+- **Metrics are part observed, part simulated.** Clicks you generate through a
+  tracked link are **real events** with a real timestamp, referrer and device, and
+  the UI breaks them out as live. The historical baseline underneath them is
+  simulated from each creator's reach and engagement with a realistic CTR curve —
+  smaller audiences click harder, which is the product's own claim. Visitor
+  company and role on a click are inferred, and labelled as inferred.
 - **Payments are represented, not processed.** The ledger moves through pending →
   scheduled → paid. No money exists.
 - **Not reproduced:** LinkedIn integration, real payments, the agency side,
@@ -243,10 +251,9 @@ Everything here is honest about being a demo:
 
 ## What I would build next
 
-1. **Real click attribution.** A `/l/[code]` route that redirects and logs a click
-   event, so the dashboard reads rows a visitor actually generated rather than a
-   simulation. This is the highest-value next thing by a distance — it is the
-   feature that proves the product, and one afternoon's work.
+1. **Content submission → review → approve.** A creator can be approved, but cannot
+   yet submit a draft. Approval is what releases payment, so this completes the
+   collaboration lifecycle.
 2. Brief editing after generation, and per-creator brief variants.
 3. Campaign-level comparison: which creator actually returned the most pipeline
    per euro, ranked.
