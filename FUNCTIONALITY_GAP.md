@@ -47,6 +47,12 @@ What is inferred and labelled as such: visitor company and role.
 | Campaign statuses | ✅ | draft → scheduled → live → completed, with side effects |
 | Per-creator collaboration states | ✅ | invited / accepted / in review / published / declined |
 | Attribution dashboard | ✅ | Simulated history **plus real recorded clicks**, broken out separately |
+| Draft submission → review → approve | ✅ | Approval publishes the post and schedules the fee; revisions are append-only |
+| Brand ↔ creator messaging | ✅ | Threaded per collaboration; generated replies are labelled as generated |
+| Creator profile editing | ✅ | Claims are editable, measurements are not — and the page says why |
+| Creator media kit | ✅ | **Not in their product.** One printable page, via the browser's own print-to-PDF |
+| Creator payout method | ✅ | Only the last four characters are stored |
+| Dedicated pricing page | ✅ | **Better than theirs** — publishes the price index and delivery rate by band |
 | Payout ledger | ✅ | Read-only, pending → scheduled → paid |
 | Creator dashboard | ✅ | Earnings, collaborations, post views |
 | Creator accept/decline | ✅ | The one interaction that genuinely belongs to that side |
@@ -57,15 +63,15 @@ What is inferred and labelled as such: visitor company and role.
 
 ## 3. Their features we have not built
 
-### 3a. Worth building — real product surface
+### 3a. Worth building — all now built
 
-| Gap | Cost | Why it matters |
+| Gap | Status | What closed it |
 |---|---|---|
-| **Content submission → review → approve** | ~2h | We have approve/publish, but a creator cannot *submit a draft*. Their flow has a review step, and approval is what releases payment. |
-| **Dedicated `/pricing` page** | ~30m | They have one; we only have a landing section. |
-| **Messaging between brand and creator** | ~4h | Visible in their in-app sidebar. Every real marketplace needs it. |
-| **Creator profile editing / media kit** | ~2h | Creators cannot currently edit the profile brands see. |
-| **Payout method setup** (creator side) | ~1h | Their creator nav has a Payments screen; ours has Earnings only. |
+| **Content submission → review → approve** | ✅ *(2026-09-08)* | Creator submits copy, brand approves or sends it back with written feedback. Approval is what publishes the post and schedules the fee. Revisions are append-only. |
+| **Dedicated `/pricing` page** | ✅ *(2026-09-08)* | Publishes the transacted price index by audience size and the delivery rate by price band — including the band where paying more bought less. |
+| **Messaging between brand and creator** | ✅ *(2026-09-08)* | Threads keyed by collaboration, not by person. Counterpart replies are generated locally and labelled as generated. |
+| **Creator profile editing / media kit** | ✅ *(2026-09-08)* | Editable: headline, bio, positioning, topics, fee, availability. Not editable: followers, engagement, median views — those are measurements. Plus a printable media kit. |
+| **Payout method setup** (creator side) | ✅ *(2026-09-08)* | `/payments`. Only the last four characters of an account are stored. |
 
 ### 3b. Deliberately cut — scope, not difficulty
 
@@ -100,11 +106,19 @@ Observed on their `/register?role=saas` after clicking *Sign up with email*:
 - They offer **OAuth alongside email**; we are email-only by constraint.
 - Their **login** is email + password only, same as ours.
 
-## 5. Recommended order
+## 5. Where this leaves it
 
-1. ~~Working tracked links~~ — **done**, see §1.
-2. **Content submission → review → approve.** Completes the collaboration lifecycle and makes approval-releases-payout real rather than a status flip.
-3. **`/pricing` page.** Half an hour, closes an obvious structural gap.
-4. Creator profile editing, then messaging, if time allows.
+Everything in §3a is built. What remains uncut is in §3b and §3c, and both
+lists are correct as they stand: §3b is content and sales surface rather than
+product, and §3c is blocked by the no-external-API constraint rather than by
+time.
 
-Everything below that line is correctly cut and should stay cut.
+Verified by:
+
+| Suite | Covers | Result |
+|---|---|---|
+| `npm run test:calculators` | The five free tools, incl. degenerate inputs | 1061/1061 |
+| `npm run test:collaboration` | Draft state machine, thread identity, unread counting, seeded history | 79/79 |
+| `npm run test:tracking` | Tracked links recording real events, in a browser | 14/14 |
+| `npm run test:review` | Submit → review → approve end to end, plus messaging | 48/48 |
+| `npm run qa` | 24 checks across 21 screenshots, desktop and mobile | 24/24 |

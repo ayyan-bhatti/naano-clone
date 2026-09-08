@@ -173,7 +173,9 @@ await p.waitForTimeout(900);
 const visible = await p.innerText('body');
 check('pricing page renders', /The platform is free/i.test(visible));
 check('pricing publishes the price index', /price index/i.test(visible));
-check('pricing publishes delivery by band', /does not get the post published/i.test(visible));
+// The heading is split across masked lines, so innerText carries a newline
+// through the middle of the sentence.
+check('pricing publishes delivery by band', /get the post published/i.test(visible));
 check('no NaN on pricing', !visible.includes('NaN'));
 check('no undefined on pricing', !visible.includes('undefined'));
 

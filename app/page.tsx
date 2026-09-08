@@ -8,7 +8,6 @@ import {
   FileText,
   Link2,
   Search,
-  TrendingUp,
   Wallet,
 } from 'lucide-react';
 
@@ -21,6 +20,12 @@ import { Reveal } from '@/components/ui/reveal';
 import { CreatorCard } from '@/components/creator-card';
 import { Faq, PlanCard } from '@/components/marketing/blocks';
 import { SiteFooter, SiteNav } from '@/components/marketing/site-chrome';
+import { AnimatedHeading } from '@/components/motion/animated-heading';
+import { AttributionScene } from '@/components/motion/attribution-scene';
+import { HeroStack } from '@/components/motion/hero-stack';
+import { RisingWords } from '@/components/motion/rising-words';
+import { ScrollProgress } from '@/components/motion/scroll-progress';
+import { useScrollTriggerRefresh } from '@/lib/hooks/use-gsap';
 
 const STEPS = [
   {
@@ -70,6 +75,10 @@ const FAQS = [
 ];
 
 export default function LandingPage() {
+  // Web fonts settle after the first paint and change every heading's height,
+  // so the triggers are re-measured once they land.
+  useScrollTriggerRefresh();
+
   // Scored against the demo buyer profile so the preview shows real ranking,
   // not decorative numbers.
   const featured = useMemo(() => {
@@ -80,6 +89,7 @@ export default function LandingPage() {
 
   return (
     <div className="flex min-h-dvh flex-col">
+      <ScrollProgress />
       <SiteNav tone="dark" />
 
       <main id="main" className="flex-1">
@@ -119,23 +129,26 @@ export default function LandingPage() {
                 </span>
               </Reveal>
 
-              <Reveal delay={60}>
-                <h1 className="mt-5 text-[40px] font-extrabold leading-[1.02] tracking-[-0.04em] text-white sm:text-[58px]">
-                  The creators your
-                  <br />
-                  buyers{' '}
-                  <span className="bg-gradient-to-r from-[#9db2ff] via-[#c4b5fd] to-[#7de3b8] bg-clip-text text-transparent">
-                    already trust.
-                  </span>
-                </h1>
-              </Reveal>
+              <AnimatedHeading
+                as="h1"
+                immediate
+                delay={0.15}
+                lines={[
+                  'The creators your',
+                  {
+                    text: 'buyers already trust.',
+                    className:
+                      'bg-gradient-to-r from-[#9db2ff] via-[#c4b5fd] to-[#7de3b8] bg-clip-text text-transparent',
+                  },
+                ]}
+                className="mt-5 text-[40px] font-extrabold leading-[1.02] tracking-[-0.04em] text-white sm:text-[58px]"
+              />
 
-              <Reveal delay={110}>
-                <p className="mt-6 max-w-lg text-[16px] leading-relaxed text-white/60 sm:text-[17px]">
-                  Find them by audience fit rather than follower count, brief them in minutes, and
-                  trace the clicks, leads and pipeline back to every single post.
-                </p>
-              </Reveal>
+              <RisingWords
+                delay={0.45}
+                text="Find them by audience fit rather than follower count, brief them in minutes, and trace the clicks, leads and pipeline back to every single post."
+                className="mt-6 max-w-lg text-[16px] leading-relaxed text-white/60 sm:text-[17px]"
+              />
 
               <Reveal delay={160}>
                 <div className="mt-9 flex flex-col gap-3 sm:flex-row">
@@ -164,9 +177,7 @@ export default function LandingPage() {
             </div>
 
             {/* Floating product fragments - depth without a screenshot */}
-            <Reveal delay={140}>
-              <HeroStack />
-            </Reveal>
+            <HeroStack />
           </div>
 
           {/* Headline metrics, on the dark floor */}
@@ -200,9 +211,10 @@ export default function LandingPage() {
             <Reveal>
               <div className="max-w-2xl">
                 <span className="micro-label">The marketplace</span>
-                <h2 className="mt-3 text-[28px] font-bold leading-tight tracking-[-0.025em] text-ink sm:text-[36px]">
-                  Ranked by fit with your buyers.
-                </h2>
+                <AnimatedHeading
+                  lines={['Ranked by fit', { text: 'with your buyers.' }]}
+                  className="mt-3 text-[28px] font-bold leading-[1.12] tracking-[-0.025em] text-ink sm:text-[36px]"
+                />
                 <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">
                   These three are the top matches for a revenue-operations tool selling into RevOps
                   and sales leaders. Change the buyer profile and the whole ranking changes — the
@@ -232,15 +244,19 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* ---------------- The trace, scroll-driven ---------------- */}
+        <AttributionScene />
+
         {/* ---------------- How it works ---------------- */}
         <section id="how" className="border-t border-line py-20 sm:py-24">
           <div className="mx-auto max-w-6xl px-4 sm:px-6">
             <Reveal>
               <div className="max-w-2xl">
                 <span className="micro-label">How it works</span>
-                <h2 className="mt-3 text-[28px] font-bold leading-tight tracking-[-0.025em] text-ink sm:text-[36px]">
-                  Five steps, one loop.
-                </h2>
+                <AnimatedHeading
+                  lines={['Five steps, one loop.']}
+                  className="mt-3 text-[28px] font-bold leading-[1.12] tracking-[-0.025em] text-ink sm:text-[36px]"
+                />
               </div>
             </Reveal>
 
@@ -273,9 +289,10 @@ export default function LandingPage() {
             <Reveal>
               <div className="max-w-2xl">
                 <span className="micro-label">Pricing</span>
-                <h2 className="mt-3 text-[28px] font-bold leading-tight tracking-[-0.025em] text-ink sm:text-[36px]">
-                  The platform is free. You pay creators.
-                </h2>
+                <AnimatedHeading
+                  lines={['The platform is free.', { text: 'You pay creators.' }]}
+                  className="mt-3 text-[28px] font-bold leading-[1.12] tracking-[-0.025em] text-ink sm:text-[36px]"
+                />
                 <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">
                   Every price is a flat fee per post, set by the creator and visible before you
                   book. Never a cost per click, impression or lead.
@@ -335,9 +352,10 @@ export default function LandingPage() {
         <section id="faq" className="border-t border-line py-20 sm:py-24">
           <div className="mx-auto max-w-3xl px-4 sm:px-6">
             <Reveal>
-              <h2 className="text-[28px] font-bold leading-tight tracking-[-0.025em] text-ink sm:text-[34px]">
-                Questions.
-              </h2>
+              <AnimatedHeading
+                lines={['Questions.']}
+                className="text-[28px] font-bold leading-[1.12] tracking-[-0.025em] text-ink sm:text-[34px]"
+              />
             </Reveal>
             <div className="mt-8 divide-y divide-line border-y border-line">
               {FAQS.map((f, i) => (
@@ -379,93 +397,6 @@ export default function LandingPage() {
       </main>
 
       <SiteFooter />
-    </div>
-  );
-}
-
-/**
- * The floating fragments beside the hero.
- *
- * Three real pieces of the product - a ranked creator, an attributed-pipeline
- * tile, and a tracked link - arranged with depth rather than one flat
- * screenshot. Each says something the headline cannot: fit is scored, pipeline
- * is attributed, every post carries its own link.
- */
-function HeroStack() {
-  return (
-    <div className="relative mx-auto hidden h-[380px] w-full max-w-[420px] lg:block">
-      {/* Creator match card */}
-      <div className="absolute left-0 top-2 w-[280px] rotate-[-3deg] rounded-[16px] border border-white/12 bg-white/[0.07] p-4 backdrop-blur-md shadow-pop">
-        <div className="flex items-center gap-3">
-          <span
-            className="flex size-10 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold text-white"
-            style={{ backgroundImage: 'linear-gradient(135deg,#3f63e8,#6d28d9)' }}
-          >
-            MF
-          </span>
-          <div className="min-w-0">
-            <p className="truncate text-[13.5px] font-semibold text-white">Marta Ferreira</p>
-            <p className="truncate text-[11.5px] text-white/50">RevOps · Sales</p>
-          </div>
-        </div>
-        <div className="mt-3.5 flex items-center justify-between">
-          <span className="text-[10px] font-semibold uppercase tracking-[0.09em] text-white/45">
-            Matching
-          </span>
-          <span className="tabular text-[13px] font-semibold text-white">88/100</span>
-        </div>
-        <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/12">
-          <div className="h-full w-[88%] rounded-full bg-gradient-to-r from-[#3f63e8] to-[#9db2ff]" />
-        </div>
-        <p className="mt-2.5 text-[11px] leading-relaxed text-white/45">
-          70% of this audience is Sales leaders, RevOps and Founders
-        </p>
-      </div>
-
-      {/* Pipeline tile */}
-      <div className="absolute right-0 top-24 w-[230px] rotate-[2.5deg] rounded-[16px] border border-white/12 bg-white/[0.07] p-4 backdrop-blur-md shadow-pop">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.09em] text-white/45">
-          Attributed pipeline
-        </span>
-        <p className="mt-1.5 text-[26px] font-bold tracking-[-0.02em] text-white">€48.2K</p>
-        <div className="mt-2 flex items-center gap-1.5 text-[11.5px] font-medium text-[#7de3b8]">
-          <TrendingUp className="size-3.5" />
-          +24%
-          <span className="font-normal text-white/35">vs first half</span>
-        </div>
-        {/* Tiny inline trend, drawn not imported */}
-        <svg viewBox="0 0 120 32" className="mt-3 h-8 w-full" aria-hidden>
-          <path
-            d="M2 27 L18 24 L34 25 L50 17 L66 19 L82 11 L98 12 L118 4"
-            fill="none"
-            stroke="#7de3b8"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </div>
-
-      {/* Tracked link */}
-      <div className="absolute bottom-2 left-8 w-[262px] rotate-[1.5deg] rounded-[16px] border border-white/12 bg-white/[0.07] p-4 backdrop-blur-md shadow-pop">
-        <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.09em] text-white/45">
-          <Link2 className="size-3" />
-          Tracked link
-        </span>
-        <p className="tabular mt-1.5 text-[13px] font-medium text-white">vouch.link/revo7k2x</p>
-        <div className="mt-3 grid grid-cols-3 gap-2 border-t border-white/10 pt-3">
-          {[
-            ['42.8K', 'Impr.'],
-            ['312', 'Clicks'],
-            ['18', 'Leads'],
-          ].map(([v, l]) => (
-            <div key={l}>
-              <p className="tabular text-[13px] font-semibold text-white">{v}</p>
-              <p className="text-[9.5px] font-semibold uppercase tracking-[0.08em] text-white/40">{l}</p>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }

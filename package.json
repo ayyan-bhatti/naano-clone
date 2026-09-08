@@ -12,10 +12,12 @@
     "test:collaboration": "node --experimental-strip-types --import ./scripts/alias-hook-register.mjs scripts/test-collaboration.ts",
     "test:tracking": "node scripts/test-tracking.mjs",
     "test:review": "node scripts/test-review-flow.mjs",
+    "test:motion": "node scripts/test-motion.mjs",
     "qa": "node scripts/qa-compare.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",
+    "gsap": "^3.15.0",
     "lucide-react": "^0.454.0",
     "next": "^15.5.4",
     "react": "^19.1.0",

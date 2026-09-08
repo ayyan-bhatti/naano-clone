@@ -13,6 +13,9 @@ import { Counter } from '@/components/ui/counter';
 import { Reveal } from '@/components/ui/reveal';
 import { Faq, PlanCard } from '@/components/marketing/blocks';
 import { SiteFooter, SiteNav } from '@/components/marketing/site-chrome';
+import { AnimatedHeading } from '@/components/motion/animated-heading';
+import { ScrollProgress } from '@/components/motion/scroll-progress';
+import { useScrollTriggerRefresh } from '@/lib/hooks/use-gsap';
 
 /**
  * Pricing.
@@ -56,6 +59,7 @@ const FAQS: { q: string; a: React.ReactNode }[] = [
 ];
 
 export function PricingScreen() {
+  useScrollTriggerRefresh();
   const [followers, setFollowers] = useState(12000);
 
   const band = useMemo(
@@ -76,6 +80,7 @@ export function PricingScreen() {
 
   return (
     <>
+      <ScrollProgress />
       <SiteNav />
       <main id="main">
         {/* ---------------- Hero ---------------- */}
@@ -85,11 +90,23 @@ export function PricingScreen() {
               <Check className="size-3.5 text-money" />
               No platform fee, no CPM, no lock-in
             </span>
-            <h1 className="mt-5 text-[34px] font-extrabold leading-[1.05] tracking-[-0.035em] text-ink sm:text-[52px]">
-              The platform is free.
-              <br />
-              You pay creators<span className="text-brand-600">.</span>
-            </h1>
+            <AnimatedHeading
+              as="h1"
+              immediate
+              delay={0.1}
+              lines={[
+                'The platform is free.',
+                {
+                  text: 'You pay creators.',
+                  node: (
+                    <>
+                      You pay creators<span className="text-brand-600">.</span>
+                    </>
+                  ),
+                },
+              ]}
+              className="mt-5 text-[34px] font-extrabold leading-[1.05] tracking-[-0.035em] text-ink sm:text-[52px]"
+            />
             <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-ink-soft sm:text-[16.5px]">
               Every price is a flat fee per post, set by the creator and visible before you book.
               Never a cost per click, impression or lead.
@@ -170,9 +187,10 @@ export function PricingScreen() {
             <Reveal>
               <div className="max-w-2xl">
                 <span className="micro-label">The price index</span>
-                <h2 className="mt-3 text-[26px] font-bold leading-tight tracking-[-0.025em] text-ink sm:text-[34px]">
-                  What a sponsored post actually costs.
-                </h2>
+                <AnimatedHeading
+                  lines={['What a sponsored post', 'actually costs.']}
+                  className="mt-3 text-[26px] font-bold leading-[1.14] tracking-[-0.025em] text-ink sm:text-[34px]"
+                />
                 <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">
                   Transacted prices across{' '}
                   <Counter value={totalBookings} className="font-semibold text-ink" /> bookings in
@@ -271,9 +289,10 @@ export function PricingScreen() {
                   <TrendingDown className="size-3.5" />
                   The uncomfortable table
                 </span>
-                <h2 className="mt-3 text-[26px] font-bold leading-tight tracking-[-0.025em] text-ink sm:text-[34px]">
-                  Paying more does not get the post published.
-                </h2>
+                <AnimatedHeading
+                  lines={['Paying more does not', 'get the post published.']}
+                  className="mt-3 text-[26px] font-bold leading-[1.14] tracking-[-0.025em] text-ink sm:text-[34px]"
+                />
                 <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">
                   Publication rate by what was offered. The{' '}
                   <strong className="font-semibold text-ink">{worstBand.label}</strong> band has the
@@ -345,9 +364,10 @@ export function PricingScreen() {
         <section className="border-b border-line bg-surface py-16 sm:py-20">
           <div className="mx-auto max-w-3xl px-4 sm:px-6">
             <Reveal>
-              <h2 className="text-[26px] font-bold leading-tight tracking-[-0.025em] text-ink sm:text-[34px]">
-                Questions about money.
-              </h2>
+              <AnimatedHeading
+                lines={['Questions about money.']}
+                className="text-[26px] font-bold leading-[1.14] tracking-[-0.025em] text-ink sm:text-[34px]"
+              />
             </Reveal>
             <div className="mt-8 divide-y divide-line border-y border-line">
               {FAQS.map((f, i) => (

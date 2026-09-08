@@ -86,16 +86,34 @@ dataset, not live LinkedIn data.
 | Icons | Lucide |
 | State | React context + `localStorage` |
 | Charts | Hand-rolled SVG |
-| Animation | Hand-rolled hooks (IntersectionObserver + rAF) |
+| In-app motion | Hand-rolled hooks (IntersectionObserver + rAF) |
+| Marketing motion | GSAP + ScrollTrigger |
 
-Six runtime dependencies: `next`, `react`, `react-dom`, `lucide-react`, `clsx`,
-`tailwind-merge`.
+Seven runtime dependencies: `next`, `react`, `react-dom`, `lucide-react`, `clsx`,
+`tailwind-merge`, `gsap`.
 
-**No charting or animation library.** Recharts would have added ~150KB to draw an
-area chart and a sparkline; Framer Motion would have added more to do scroll
-reveals and count-ups. Both are ~100 lines of SVG and two hooks. Shared JS is
-**103KB**, and every animation respects `prefers-reduced-motion` at the hook
-level rather than just in CSS.
+**No charting library.** Recharts would have added ~150KB to draw an area chart
+and a sparkline. Both are ~100 lines of SVG.
+
+**Two animation layers, deliberately.** The product surfaces — dashboard,
+marketplace, campaigns — use hand-rolled hooks: reveals and count-ups are an
+IntersectionObserver and a rAF loop, and shipping a timeline engine to fade in a
+stat card would be indefensible. The marketing pages use GSAP with ScrollTrigger,
+because scrubbed scroll positions, masked line reveals and a pulse looping along
+a rail are exactly the problem it exists to solve, and hand-rolling scroll
+progress correctly is a much worse use of the bytes. GSAP is code-split to `/`
+and `/pricing` and never reaches the app: shared JS is still **103KB**, and the
+signed-in surfaces are unchanged.
+
+Core and ScrollTrigger only — the formerly-Club plugins are free as of GSAP 3.13,
+but text splitting and line drawing are hand-rolled in `lib/gsap.ts` so no
+reviewer has to go and check that.
+
+Every animation, in both layers, is gated on `prefers-reduced-motion` in
+JavaScript rather than only in CSS: reduced motion means the setup callback never
+runs and the final state renders, not a slower version of the same movement.
+`npm run test:motion` asserts exactly that, along with the real failure mode of
+scroll animation — an element that never arrives and leaves a blank section.
 
 ## Architecture
 
@@ -174,10 +192,17 @@ npm run build        # production build
 npm run start        # serve the build
 npm run lint             # eslint
 npm run typecheck        # tsc --noEmit
-npm run test:calculators # 1061 assertions over the pure calculators
-npm run test:tracking    # 14 browser assertions that tracked links record events
-npm run qa               # visual + behavioural QA vs naano.com (needs Playwright)
+npm run test:calculators   # 1061 assertions over the pure calculators
+npm run test:collaboration #   79 assertions over the review + messaging state machines
+npm run test:tracking      #   14 browser assertions that tracked links record events
+npm run test:review        #   48 browser assertions: submit -> review -> approve, messaging
+npm run test:motion        #   29 browser assertions that nothing is left invisible
+npm run qa                 #   24 visual + behavioural checks vs naano.com
 ```
+
+The four browser suites need a production build running (`npm run build && npm run
+start`) and Playwright available (`npm install --no-save playwright`) — it is a QA
+tool, not a dependency of the app.
 
 Node 20+. No `.env` file, no API keys, nothing to configure.
 
