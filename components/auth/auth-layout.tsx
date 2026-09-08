@@ -6,8 +6,9 @@ import Link from 'next/link';
 import { cn } from '@/lib/cn';
 import { Logo } from '@/components/brand';
 import { AuthRobot } from '@/components/auth/robot';
+import { useSplineRig } from '@/components/auth/spline-rig';
 import { WatchingCrowd, type CrowdMood } from '@/components/auth/watching-crowd';
-import { SplineCredit, SplineScene } from '@/components/auth/spline-scene';
+import { SplineCredit, SplineScene, type SplineApp } from '@/components/auth/spline-scene';
 import { isSplineEnabled } from '@/lib/spline';
 
 /**
@@ -44,6 +45,13 @@ export function AuthLayout({
   // Flips once the Spline iframe has painted, which is what retires the
   // hand-built layer underneath it.
   const [sceneReady, setSceneReady] = useState(false);
+
+  /*
+    The runtime handle for the 3D scene. Holding it is what lets the robot be
+    posed from the form - see components/auth/spline-rig.ts.
+  */
+  const [splineApp, setSplineApp] = useState<SplineApp | null>(null);
+  useSplineRig(splineApp, mood, peekProgress);
 
   return (
     <div className="flex min-h-dvh bg-ground">
@@ -116,7 +124,11 @@ export function AuthLayout({
           below it.
         */}
         {splineEnabled && (
-          <SplineScene className="absolute inset-0 size-full" onReady={() => setSceneReady(true)} />
+          <SplineScene
+            className="absolute inset-0 size-full"
+            onReady={() => setSceneReady(true)}
+            onApp={setSplineApp}
+          />
         )}
 
         {/*

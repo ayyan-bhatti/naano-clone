@@ -11,7 +11,7 @@ import { awaitingReview } from '@/lib/drafts';
 import { totalUnreadForRole } from '@/lib/messages';
 import { aggregateMetricsWithClicks } from '@/lib/metrics';
 import { useStore } from '@/lib/store';
-import { AuthRobot } from '@/components/auth/robot';
+import { AssistantAvatar } from '@/components/assistant/assistant-avatar';
 
 /**
  * The site assistant.
@@ -26,10 +26,10 @@ import { AuthRobot } from '@/components/auth/robot';
  * something plausible. It also reads the live store, so "what is waiting on
  * me" is answered from your actual campaigns rather than in the abstract.
  *
- * The launcher is the hand-drawn SVG robot rather than the 3D one. A full
- * WebGL scene in a 56px bubble on every route would cost ~1.5MB of runtime for
- * something that renders at thumbnail size; the SVG is a few kilobytes, reacts
- * to the cursor, and is the same character.
+ * The launcher shows the same 3D robot as the auth pages, cropped to a
+ * portrait so it is legible at 56px - see AssistantAvatar for how it is kept
+ * off the critical path. The hand-drawn SVG robot is the instant placeholder
+ * and the permanent fallback.
  */
 
 interface Turn {
@@ -177,31 +177,46 @@ export function Assistant() {
   return (
     <>
       {/* ---------------- Launcher ---------------- */}
-      <button
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        aria-label={open ? 'Close the assistant' : 'Open the assistant'}
-        className={cn(
-          'fixed bottom-5 right-5 z-[80] grid size-14 place-items-center rounded-full',
-          'bg-ink text-white shadow-pop transition-[transform,background-color] duration-200',
-          'hover:scale-105 active:scale-95',
-          'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
-          open && 'scale-95',
-        )}
-      >
-        {open ? (
-          <X className="size-5" />
-        ) : (
-          <AuthRobot mood="idle" className="size-[52px]" />
-        )}
+      {/*
+        The avatar sits beside the button, not inside it.
+
+        react-spline renders its own <div> around the canvas, and <button>
+        takes phrasing content only - nesting one inside the other made the
+        HTML parser reparent the canvas and silently collapse the launcher to a
+        16x21 box. So the container carries the visuals and a transparent
+        button is laid over the top, which keeps native button semantics,
+        focus and keyboard behaviour intact.
+      */}
+      <div className="fixed bottom-5 right-5 z-[80] size-14">
+        <div
+          aria-hidden
+          className={cn(
+            'absolute inset-0 grid place-items-center overflow-hidden rounded-full',
+            'bg-ink text-white shadow-pop transition-transform duration-200',
+            open && 'scale-95',
+          )}
+        >
+          {open ? <X className="size-5" /> : <AssistantAvatar className="size-full" />}
+        </div>
+
+        <button
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          aria-label={open ? 'Close the assistant' : 'Open the assistant'}
+          className={cn(
+            'absolute inset-0 size-full rounded-full transition-transform duration-200',
+            'hover:scale-105 active:scale-95',
+            'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
+          )}
+        />
 
         {/* Only badge when there is genuinely something to act on. */}
         {!open && store.hydrated && unanswered > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 grid size-5 place-items-center rounded-full bg-brand-600 text-[10px] font-bold text-white ring-2 ring-ground">
+          <span className="pointer-events-none absolute -right-0.5 -top-0.5 grid size-5 place-items-center rounded-full bg-brand-600 text-[10px] font-bold text-white ring-2 ring-ground">
             {unanswered}
           </span>
         )}
-      </button>
+      </div>
 
       {/* ---------------- Panel ---------------- */}
       {open && (
@@ -217,9 +232,7 @@ export function Assistant() {
         >
           {/* Header */}
           <header className="flex items-center gap-3 border-b border-line px-4 py-3">
-            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-ink">
-              <AuthRobot mood="watching" className="size-8" />
-            </span>
+            <AssistantAvatar className="size-9 shrink-0 bg-ink" />
             <div className="min-w-0 flex-1">
               <p className="text-[13.5px] font-semibold text-ink">Ask about Vouch</p>
               <p className="truncate text-[11.5px] text-ink-muted">

@@ -42,13 +42,35 @@ const Spline = dynamic(() => import('@splinetool/react-spline'), {
   loading: () => null,
 });
 
+/**
+ * The subset of Spline's Application we use. Typing it here rather than
+ * importing keeps the runtime out of the server's type graph, and documents
+ * exactly how much of that API this build depends on.
+ */
+export interface SplineApp {
+  getAllObjects?: () => { name: string; visible: boolean }[];
+  findObjectByName?: (name: string) => SplineObject | undefined;
+  setVariable?: (name: string, value: unknown) => void;
+  emitEvent?: (event: string, target: string) => void;
+}
+
+export interface SplineObject {
+  name: string;
+  rotation: { x: number; y: number; z: number };
+  position: { x: number; y: number; z: number };
+  scale: { x: number; y: number; z: number };
+}
+
 export function SplineScene({
   className,
   onReady,
+  onApp,
 }: {
   className?: string;
   /** Fires once the scene has actually loaded, so the fallback can stand down. */
   onReady?: () => void;
+  /** Hands the caller the runtime, so the scene can be driven by the form. */
+  onApp?: (app: SplineApp) => void;
 }) {
   const [loaded, setLoaded] = useState(false);
   const reduced = usePrefersReducedMotion();
@@ -61,20 +83,35 @@ export function SplineScene({
    */
   if (reduced || !SPLINE_SCENE_URL) return null;
 
+  /*
+    A span, not a div. This is rendered inside the assistant's launcher button,
+    and <button> takes phrasing content - a div in there is reparented by the
+    HTML parser, which silently collapsed the launcher to a 16x21 box. `block`
+    restores the layout behaviour a div would have had.
+  */
   return (
-    <div className={cn('pointer-events-none', className)} aria-hidden>
+    <span className={cn('pointer-events-none block', className)} aria-hidden>
       <Spline
         scene={SPLINE_SCENE_URL}
-        onLoad={() => {
+        // The runtime's own Application type is structurally wider than the
+        // slice we use, so it is narrowed here rather than in the prop.
+        onLoad={(runtime) => {
+          const app = runtime as unknown as SplineApp;
           setLoaded(true);
           onReady?.();
+          onApp?.(app);
+          // Handy for probing object names from a devtools console or a
+          // Playwright script; harmless, and it is how the rig below was built.
+          if (typeof window !== 'undefined') {
+            (window as unknown as { __splineApp?: SplineApp }).__splineApp = app;
+          }
         }}
         className={cn(
           '!size-full transition-opacity duration-700 ease-out',
           loaded ? 'opacity-100' : 'opacity-0',
         )}
       />
-    </div>
+    </span>
   );
 }
 
