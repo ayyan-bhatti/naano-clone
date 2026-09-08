@@ -266,7 +266,7 @@ function MarketplaceBody({
         <div className="hidden w-[212px] shrink-0 lg:block">
           <div className="sticky top-24">
             <div className="mb-3 flex items-center justify-between">
-              <span className="micro-label">Filters</span>
+              <h2 className="micro-label">Filters</h2>
               {activeFilterCount > 0 && (
                 <button onClick={clearAll} className="text-[12px] font-medium text-brand-600 hover:underline">
                   Clear all
@@ -485,6 +485,7 @@ function FilterRail({
 function FilterGroup({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
+      {/* h3 is correct here: the rail's own "Filters" label is the h2 above it. */}
       <h3 className="micro-label mb-2">{title}</h3>
       <div className="space-y-0.5">{children}</div>
     </div>

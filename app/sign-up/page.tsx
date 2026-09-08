@@ -101,6 +101,7 @@ export default function SignUpPage() {
 
   return (
     <AuthLayout
+      robot
       mood={crowd.mood}
       peekProgress={crowd.peekProgress}
       eyebrow="2,400 creators are watching"
@@ -159,7 +160,7 @@ export default function SignUpPage() {
         <div>
           <button
             onClick={() => setRole(null)}
-            className="mb-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-ink-muted transition-colors hover:text-ink"
+            className="mb-4 inline-flex min-h-[24px] items-center gap-1.5 py-0.5 text-[13px] font-medium text-ink-muted transition-colors hover:text-ink"
           >
             <ArrowLeft className="size-3.5" />
             Change role

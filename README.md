@@ -198,7 +198,14 @@ npm run test:tracking      #   14 browser assertions that tracked links record e
 npm run test:review        #   48 browser assertions: submit -> review -> approve, messaging
 npm run test:motion        #   29 browser assertions that nothing is left invisible
 npm run qa                 #   24 visual + behavioural checks vs naano.com
+npm run qa:audit           #  436 checks: contrast, overflow, a11y, dead links
+npm run qa:design          #  re-reads naano.com's computed design tokens
 ```
+
+`qa:audit` is the full sweep: every route at desktop/tablet/mobile, WCAG
+contrast measured against the real painted background, horizontal overflow,
+tap-target sizes, unlabelled controls, duplicate ids, heading order, dead
+internal links and console noise — across public, brand and creator sessions.
 
 The four browser suites need a production build running (`npm run build && npm run
 start`) and Playwright available (`npm install --no-save playwright`) — it is a QA

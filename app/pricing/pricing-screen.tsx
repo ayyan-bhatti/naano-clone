@@ -380,7 +380,8 @@ export function PricingScreen() {
               <Info className="mt-0.5 size-3.5 shrink-0" />
               The price and delivery figures on this page are our own reference set, used
               consistently across the free tools and this page. They are documented in{' '}
-              <code className="rounded bg-sunken px-1 py-0.5 text-[11px]">
+              {/* Its own colour: ink-faint does not clear AA on the sunken chip. */}
+              <code className="rounded bg-sunken px-1 py-0.5 text-[11px] text-ink-muted">
                 lib/data/benchmarks.ts
               </code>
               .

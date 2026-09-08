@@ -53,7 +53,13 @@ export function PlanCard({
           </li>
         ))}
       </ul>
-      <div className="mt-6">{cta}</div>
+      {/*
+        [&>a]:block — a Link wrapping a full-width Button is inline by default,
+        so the anchor's own box collapses to the line height even though the
+        button paints at 44px. The click target was always the button; this
+        makes the anchor agree with it.
+      */}
+      <div className="mt-6 [&>a]:block">{cta}</div>
       {note && <p className="mt-3 text-[12px] leading-relaxed text-ink-faint">{note}</p>}
     </div>
   );

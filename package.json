@@ -13,7 +13,9 @@
     "test:tracking": "node scripts/test-tracking.mjs",
     "test:review": "node scripts/test-review-flow.mjs",
     "test:motion": "node scripts/test-motion.mjs",
-    "qa": "node scripts/qa-compare.mjs"
+    "qa": "node scripts/qa-compare.mjs",
+    "qa:audit": "node scripts/qa-audit.mjs",
+    "qa:design": "node scripts/extract-design.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

@@ -143,7 +143,12 @@ export function SiteFooter() {
               Turn the creators your buyers already trust into a measurable acquisition channel.
             </p>
           </div>
-          <nav aria-label="Footer" className="flex flex-wrap gap-x-6 gap-y-2 text-[13px]">
+          {/*
+            min-h-[24px] on every footer link: they are standalone navigation,
+            so the WCAG 2.5.8 inline-text exception does not cover them and at
+            their natural 20px they were under the minimum target size.
+          */}
+          <nav aria-label="Footer" className="flex flex-wrap gap-x-6 gap-y-1 text-[13px] [&>a]:inline-flex [&>a]:min-h-[24px] [&>a]:items-center">
             <Link href="/marketplace" className="text-ink-soft hover:text-ink">
               Marketplace
             </Link>

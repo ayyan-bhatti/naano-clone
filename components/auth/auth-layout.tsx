@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 import { cn } from '@/lib/cn';
 import { Logo } from '@/components/brand';
+import { AuthRobot } from '@/components/auth/robot';
 import { WatchingCrowd, type CrowdMood } from '@/components/auth/watching-crowd';
 import { SplineCredit, SplineScene } from '@/components/auth/spline-scene';
 import { isSplineEnabled } from '@/lib/spline';
@@ -30,6 +31,8 @@ export function AuthLayout({
   statement,
   children,
   footer,
+  /** Signup leads with the robot; sign-in keeps the statement. */
+  robot = false,
 }: {
   mood: CrowdMood;
   peekProgress: number;
@@ -37,6 +40,7 @@ export function AuthLayout({
   statement: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
+  robot?: boolean;
 }) {
   const splineEnabled = isSplineEnabled();
 
@@ -50,7 +54,7 @@ export function AuthLayout({
           </Link>
           <Link
             href="/marketplace"
-            className="text-[13px] font-semibold text-ink-soft transition-colors hover:text-ink"
+            className="inline-flex min-h-[24px] items-center py-0.5 text-[13px] font-semibold text-ink-soft transition-colors hover:text-ink"
           >
             Browse creators
           </Link>
@@ -99,11 +103,32 @@ export function AuthLayout({
         )}
 
         {/*
-          The statement sits in the clearing the crowd layout keeps free, so
-          every face in the panel is looking at it.
+          The clearing the crowd layout keeps free is where the content goes,
+          so every face in the panel is looking at it. On signup that content
+          is the robot, which reacts to the form the same way the crowd does.
         */}
         <div className="relative flex h-full items-center justify-center px-14">
           <div className="max-w-sm text-center">
+            {robot && (
+              // The crowd stands behind the robot, and a face with headwear
+              // landing just above its antenna read as part of the robot. The
+              // vignette clears a pocket of space for it to stand in.
+              <div className="relative mx-auto mb-5 w-fit">
+                <span
+                  aria-hidden
+                  className="absolute left-1/2 top-1/2 -z-10 size-[320px] -translate-x-1/2 -translate-y-1/2 rounded-full"
+                  style={{
+                    background:
+                      'radial-gradient(circle, rgba(20,44,120,0.55) 0%, rgba(20,44,120,0.28) 45%, transparent 70%)',
+                  }}
+                />
+                <AuthRobot
+                  mood={mood}
+                  peekProgress={peekProgress}
+                  className="h-[230px] w-[220px] drop-shadow-[0_20px_34px_rgba(8,20,60,0.45)]"
+                />
+              </div>
+            )}
             <p className="text-[26px] font-semibold leading-[1.14] tracking-[-0.035em] text-white">
               Creators. Brands. Results.
             </p>
@@ -111,9 +136,11 @@ export function AuthLayout({
               Run LinkedIn creator campaigns that drive real business — find the voices your buyers
               trust, track every post, pay in one click.
             </p>
-            <p className="mt-8 text-[12px] font-medium uppercase tracking-[0.12em] text-white/50">
-              Built for B2B marketing teams
-            </p>
+            {!robot && (
+              <p className="mt-8 text-[12px] font-medium uppercase tracking-[0.12em] text-white/50">
+                Built for B2B marketing teams
+              </p>
+            )}
           </div>
         </div>
       </aside>

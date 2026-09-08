@@ -169,7 +169,9 @@ function MessagesInner() {
                           {thread.name}
                         </span>
                         {last && (
-                          <span className="shrink-0 text-[11px] text-ink-faint">
+                          // ink-muted, not ink-faint: an active row is tinted
+                          // brand-50 and the faint tier does not clear AA on it.
+                          <span className="shrink-0 text-[11px] text-ink-muted">
                             {relativeTime(last.createdAt)}
                           </span>
                         )}
@@ -181,7 +183,7 @@ function MessagesInner() {
                         <span
                           className={cn(
                             'mt-1 block truncate text-[12px]',
-                            unread ? 'text-ink-soft' : 'text-ink-faint',
+                            unread ? 'text-ink-soft' : 'text-ink-muted',
                           )}
                         >
                           {last.from === role ? 'You: ' : ''}

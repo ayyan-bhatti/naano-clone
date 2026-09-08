@@ -51,7 +51,7 @@ export function ToolPage({
           <div className="mx-auto max-w-6xl px-4 py-9 sm:px-6 sm:py-12">
             <Link
               href="/free-tools"
-              className="inline-flex items-center gap-1.5 text-[13px] font-medium text-ink-muted transition-colors hover:text-ink"
+              className="inline-flex min-h-[24px] items-center gap-1.5 py-0.5 text-[13px] font-medium text-ink-muted transition-colors hover:text-ink"
             >
               <ArrowLeft className="size-3.5" />
               Free tools

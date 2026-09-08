@@ -31,7 +31,14 @@
   --color-ink: #17181c;
   --color-ink-soft: #43454c;
   --color-ink-muted: #6b6d75;
-  --color-ink-faint: #9b9da3;
+  /*
+     naano's own faint grey is rgb(155,157,163), which measures 2.7:1 on white
+     and fails WCAG AA for small text. Copying a design system does not mean
+     copying its accessibility failures, so this tier is darkened to the
+     lightest grey that still clears 4.5:1 on both #ffffff and #fcfcfb. It
+     stays the quietest step in the ramp; it is just legible now.
+  */
+  --color-ink-faint: #71747c;
 
   /* Sky - their signature. The hero, card bands and section grounds. */
   --color-sky-50: #f4fbfe;

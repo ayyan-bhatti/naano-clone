@@ -178,7 +178,7 @@ function NewCampaignInner() {
       <div className="mx-auto max-w-3xl">
         <Link
           href="/campaigns"
-          className="inline-flex items-center gap-1.5 text-[13px] font-medium text-ink-muted transition-colors hover:text-ink"
+          className="inline-flex min-h-[24px] items-center gap-1.5 py-0.5 text-[13px] font-medium text-ink-muted transition-colors hover:text-ink"
         >
           <ArrowLeft className="size-3.5" />
           Back to campaigns
