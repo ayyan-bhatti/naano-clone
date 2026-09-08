@@ -29,6 +29,9 @@ import { usePrefersReducedMotion } from '@/lib/hooks/use-motion';
 
 export type CrowdMood = 'idle' | 'watching' | 'away';
 
+/** Headwear, so the crowd reads as individuals rather than repeated dots. */
+type Accessory = 'none' | 'cap' | 'beanie' | 'headphones' | 'glasses';
+
 interface Face {
   id: number;
   x: number;
@@ -41,7 +44,30 @@ interface Face {
   phase: number;
   /** Whether this face is one of the ones that peeks. */
   peeker: boolean;
+  accessory: Accessory;
+  /** Mirrors the cap brim and shifts the body, so neighbours are not clones. */
+  flip: boolean;
 }
+
+/**
+ * A spread of hues rather than one ramp. A crowd of a single colour reads as a
+ * pattern; a mixed one reads as people.
+ */
+const HUES = [222, 262, 196, 158, 28, 340, 244, 178];
+
+/** Roughly half the crowd wears something. More than that reads as costume. */
+const ACCESSORIES: Accessory[] = [
+  'none',
+  'none',
+  'none',
+  'none',
+  'cap',
+  'cap',
+  'beanie',
+  'headphones',
+  'glasses',
+  'glasses',
+];
 
 const VIEW_W = 1440;
 const VIEW_H = 900;
@@ -102,15 +128,20 @@ function buildFaces(): Face[] {
       const distance = Math.hypot(x - FOCUS_X, y - FOCUS_Y) / halfDiag;
       if (distance < CLEARING + (c - 0.5) * 0.09) continue;
 
+      const d = hash(seed * 13 + 5);
+      const e = hash(seed * 19 + 7);
+
       faces.push({
         id: id++,
         x,
         y,
         r: 10 + depth * 12,
         depth,
-        hue: 215 + c * 85, // indigo -> violet
+        hue: HUES[Math.floor(c * HUES.length) % HUES.length],
         phase: a * Math.PI * 2,
         peeker: c > 0.8,
+        accessory: ACCESSORIES[Math.floor(d * ACCESSORIES.length) % ACCESSORIES.length],
+        flip: e > 0.5,
       });
     }
   }
@@ -311,11 +342,30 @@ export function WatchingCrowd({
               }}
               transform={`translate(${face.x} ${face.y})`}
             >
+              {/* Shoulders. Drawn first so the head sits in front of them. */}
+              <rect
+                x={-face.r * 1.12}
+                y={face.r * 0.92}
+                width={face.r * 2.24}
+                height={face.r * 1.7}
+                rx={face.r * 0.78}
+                fill={`hsl(${face.hue} 62% ${44 + face.depth * 12}%)`}
+                opacity={bodyOpacity * 0.85}
+              />
+
               {/* Head */}
               <circle
                 r={face.r}
                 fill={`hsl(${face.hue} 70% ${58 + face.depth * 14}%)`}
                 opacity={bodyOpacity}
+              />
+              {/* Offset highlight - cheap volume without a per-face gradient */}
+              <circle
+                cx={-face.r * 0.24}
+                cy={-face.r * 0.28}
+                r={face.r * 0.7}
+                fill="#ffffff"
+                opacity={0.05 + face.depth * 0.07}
               />
               <circle
                 r={face.r}
@@ -324,6 +374,9 @@ export function WatchingCrowd({
                 strokeWidth={0.7}
                 opacity={0.12 + face.depth * 0.28}
               />
+
+              {/* Headwear */}
+              <Headwear face={face} opacity={bodyOpacity} />
 
               {/* Open eyes */}
               <g
@@ -371,6 +424,82 @@ export function WatchingCrowd({
       </g>
     </svg>
   );
+}
+
+/**
+ * Headwear for one face.
+ *
+ * Purely decorative and never animated, so it stays out of the rAF loop - only
+ * the group transform, pupils and eyelids are touched per frame.
+ */
+function Headwear({ face, opacity }: { face: Face; opacity: number }) {
+  const r = face.r;
+  const dir = face.flip ? -1 : 1;
+  const shade = `hsl(${face.hue} 55% ${30 + face.depth * 14}%)`;
+  const light = `hsl(${face.hue} 70% ${64 + face.depth * 10}%)`;
+
+  switch (face.accessory) {
+    case 'cap':
+      return (
+        <g opacity={opacity * 1.05}>
+          {/* Dome */}
+          <path d={`M ${-r * 1.0} ${-r * 0.34} a ${r} ${r} 0 0 1 ${r * 2} 0 Z`} fill={shade} />
+          {/* Brim, pointing whichever way this face is turned */}
+          <rect
+            x={dir > 0 ? r * 0.6 : -r * 2.05}
+            y={-r * 0.46}
+            width={r * 1.45}
+            height={r * 0.26}
+            rx={r * 0.13}
+            fill={shade}
+          />
+        </g>
+      );
+
+    case 'beanie':
+      return (
+        <g opacity={opacity * 1.05}>
+          <path d={`M ${-r * 0.98} ${-r * 0.4} a ${r * 0.98} ${r * 0.98} 0 0 1 ${r * 1.96} 0 Z`} fill={shade} />
+          <rect
+            x={-r * 1.02}
+            y={-r * 0.5}
+            width={r * 2.04}
+            height={r * 0.26}
+            rx={r * 0.13}
+            fill={light}
+          />
+          <circle cy={-r * 1.12} r={r * 0.17} fill={light} />
+        </g>
+      );
+
+    case 'headphones':
+      return (
+        <g opacity={opacity * 1.05}>
+          <path
+            d={`M ${-r * 1.02} ${-r * 0.1} a ${r * 1.02} ${r * 1.02} 0 0 1 ${r * 2.04} 0`}
+            fill="none"
+            stroke={shade}
+            strokeWidth={r * 0.2}
+            strokeLinecap="round"
+          />
+          <rect x={-r * 1.2} y={-r * 0.28} width={r * 0.34} height={r * 0.6} rx={r * 0.16} fill={shade} />
+          <rect x={r * 0.86} y={-r * 0.28} width={r * 0.34} height={r * 0.6} rx={r * 0.16} fill={shade} />
+        </g>
+      );
+
+    case 'glasses':
+      // Sits over the eyes, so it stays readable whether they are open or shut.
+      return (
+        <g opacity={opacity * 0.9} fill="none" stroke={light} strokeWidth={r * 0.08}>
+          <circle cx={-r * 0.34} cy={-r * 0.08} r={r * 0.3} />
+          <circle cx={r * 0.34} cy={-r * 0.08} r={r * 0.3} />
+          <path d={`M ${-r * 0.04} ${-r * 0.08} L ${r * 0.04} ${-r * 0.08}`} />
+        </g>
+      );
+
+    default:
+      return null;
+  }
 }
 
 /**
