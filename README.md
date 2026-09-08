@@ -195,6 +195,7 @@ npm run lint             # eslint
 npm run typecheck        # tsc --noEmit
 npm run test:calculators   # 1061 assertions over the pure calculators
 npm run test:collaboration #   79 assertions over the review + messaging state machines
+npm run test:assistant     #   95 assertions over the assistant's retrieval engine
 npm run test:tracking      #   14 browser assertions that tracked links record events
 npm run test:review        #   48 browser assertions: submit -> review -> approve, messaging
 npm run test:motion        #   29 browser assertions that nothing is left invisible
@@ -235,6 +236,27 @@ npx vercel --prod
 
 Because there are no server secrets and no external services, there is no
 staging/production configuration split and nothing that can expire.
+
+## The assistant
+
+A small robot in the corner of every page that answers questions about the
+product and can navigate you around it.
+
+There is no model behind it — this build ships with no external APIs and no
+keys, so there is nothing to call. It is a retrieval engine over a hand-written
+knowledge base: normalise the question, expand synonyms, score every entry by
+weighted term overlap, return the best match with a confidence.
+
+The interesting part is the threshold. Below it the engine says it does not
+know and lists what it does cover, rather than returning the least-bad entry —
+a retrieval bot that always answers is worse than one that admits a gap,
+because you cannot tell the two apart until the answer is wrong.
+`npm run test:assistant` asserts both directions: 36 real phrasings reach the
+right entry, and six out-of-scope questions are refused.
+
+It also reads the live store, so *"what is waiting on you"* is answered from
+your actual campaigns — draft queue, unread messages, attributed pipeline —
+rather than in the abstract.
 
 ## Product decisions
 

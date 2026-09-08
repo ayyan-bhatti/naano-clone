@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 
 import { StoreProvider } from '@/lib/store';
+import { Assistant } from '@/components/assistant/assistant';
 import { ToastProvider } from '@/components/ui/feedback';
 import './globals.css';
 
@@ -73,7 +74,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to content
         </a>
         <StoreProvider>
-          <ToastProvider>{children}</ToastProvider>
+          <ToastProvider>
+            {children}
+            {/*
+              Inside the providers because it reads the live store - it answers
+              "what is waiting on me" from your actual campaigns. It hides
+              itself on the auth pages, which have a robot of their own.
+            */}
+            <Assistant />
+          </ToastProvider>
         </StoreProvider>
       </body>
     </html>
