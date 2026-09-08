@@ -171,7 +171,7 @@ export default function CampaignBudgetPage() {
 
             <div className="mt-5 rounded-[12px] bg-sunken/60 p-4">
               <span className="micro-label text-[10px]">True cost per published post</span>
-              <p className="tabular mt-1.5 text-[30px] font-extrabold tracking-[-0.03em] text-ink">
+              <p className="tabular mt-1.5 text-[30px] font-semibold tracking-[-0.042em] text-ink">
                 <Counter value={focus.costPerPublished} format="eur" />
               </p>
               <p className="mt-1 text-[12.5px] leading-relaxed text-ink-muted">
@@ -393,7 +393,7 @@ function ChainStep({
       <span className="micro-label text-[10px]">{label}</span>
       <p
         className={cn(
-          'tabular mt-1.5 text-[24px] font-bold tracking-[-0.02em]',
+          'tabular mt-1.5 text-[24px] font-semibold tracking-[-0.032em]',
           tone === 'money' ? 'text-money' : 'text-ink',
         )}
       >

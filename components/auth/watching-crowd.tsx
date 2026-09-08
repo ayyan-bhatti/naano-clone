@@ -69,20 +69,36 @@ const ACCESSORIES: Accessory[] = [
   'glasses',
 ];
 
-const VIEW_W = 1440;
-const VIEW_H = 900;
-const COLS = 16;
-const ROWS = 11;
-
-/** Where the form sits, and therefore where every gaze converges. */
-const FOCUS_X = VIEW_W / 2;
-const FOCUS_Y = VIEW_H / 2;
-
 /**
- * Radius of the clearing kept free of faces so the centred form is not sitting
- * on top of anybody. Expressed as a fraction of the half-diagonal.
+ * Two shapes of crowd.
+ *
+ * `wide` is the original full-bleed landscape field. `panel` is a portrait
+ * version for the blue column on the auth pages - and it exists because the
+ * landscape one cannot simply be cropped to fit. Slicing a 1440x900 field into
+ * a 660-wide column shows only its middle, and the middle is the clearing, so
+ * the panel rendered as an empty band with faces stranded at the edges.
+ *
+ * The clearing is smaller in the panel: the statement it makes room for is a
+ * few lines of text, not a whole form.
  */
-const CLEARING = 0.42;
+export type CrowdLayout = 'wide' | 'panel';
+
+interface LayoutSpec {
+  w: number;
+  h: number;
+  cols: number;
+  rows: number;
+  /** Radius of the face-free centre, as a fraction of the half-diagonal. */
+  clearing: number;
+  /** Face radius range, near to far. */
+  minR: number;
+  maxR: number;
+}
+
+const LAYOUTS: Record<CrowdLayout, LayoutSpec> = {
+  wide: { w: 1440, h: 900, cols: 16, rows: 11, clearing: 0.42, minR: 10, maxR: 22 },
+  panel: { w: 820, h: 1180, cols: 9, rows: 16, clearing: 0.3, minR: 11, maxR: 25 },
+};
 
 function hash(n: number): number {
   let h = (n + 0x9e3779b9) >>> 0;
@@ -99,10 +115,13 @@ function hash(n: number): number {
  * clearing are dropped instead of being shoved outward - pushing them creates a
  * visible pile-up along the boundary that reads as a rendering bug.
  */
-function buildFaces(): Face[] {
+function buildFaces(spec: LayoutSpec): Face[] {
   const faces: Face[] = [];
   let id = 0;
 
+  const { w: VIEW_W, h: VIEW_H, cols: COLS, rows: ROWS, clearing: CLEARING } = spec;
+  const focusX = VIEW_W / 2;
+  const focusY = VIEW_H / 2;
   const halfDiag = Math.hypot(VIEW_W / 2, VIEW_H / 2);
 
   for (let row = 0; row < ROWS; row += 1) {
@@ -125,7 +144,7 @@ function buildFaces(): Face[] {
 
       // Keep the middle clear for the form. The boundary is jittered per face so
       // the edge of the crowd is ragged rather than a perfect circle.
-      const distance = Math.hypot(x - FOCUS_X, y - FOCUS_Y) / halfDiag;
+      const distance = Math.hypot(x - focusX, y - focusY) / halfDiag;
       if (distance < CLEARING + (c - 0.5) * 0.09) continue;
 
       const d = hash(seed * 13 + 5);
@@ -135,7 +154,7 @@ function buildFaces(): Face[] {
         id: id++,
         x,
         y,
-        r: 10 + depth * 12,
+        r: spec.minR + depth * (spec.maxR - spec.minR),
         depth,
         hue: HUES[Math.floor(c * HUES.length) % HUES.length],
         phase: a * Math.PI * 2,
@@ -161,13 +180,21 @@ export function WatchingCrowd({
   mood,
   /** Rises 0 -> 1 while the user is idle on the password field. */
   peekProgress = 0,
+  layout = 'wide',
   className,
 }: {
   mood: CrowdMood;
   peekProgress?: number;
+  layout?: CrowdLayout;
   className?: string;
 }) {
-  const faces = useMemo(buildFaces, []);
+  const spec = LAYOUTS[layout];
+  const VIEW_W = spec.w;
+  const VIEW_H = spec.h;
+  const FOCUS_X = VIEW_W / 2;
+  const FOCUS_Y = VIEW_H / 2;
+
+  const faces = useMemo(() => buildFaces(spec), [spec]);
   const reduced = usePrefersReducedMotion();
 
   const refs = useRef<FaceRefs[]>([]);
@@ -199,7 +226,7 @@ export function WatchingCrowd({
 
     window.addEventListener('pointermove', onPointerMove, { passive: true });
     return () => window.removeEventListener('pointermove', onPointerMove);
-  }, [reduced]);
+  }, [reduced, VIEW_W, VIEW_H]);
 
   useEffect(() => {
     if (reduced) return;
@@ -299,7 +326,7 @@ export function WatchingCrowd({
 
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [faces, reduced]);
+  }, [faces, reduced, FOCUS_X, FOCUS_Y]);
 
   return (
     <svg

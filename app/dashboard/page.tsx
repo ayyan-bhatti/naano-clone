@@ -94,7 +94,16 @@ function DashboardInner() {
         }
       }),
     );
-    return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date)).slice(-30);
+    const series = [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
+
+    // Scheduled campaigns contribute a run of future, all-zero days. Taking the
+    // last 30 points blindly meant the chart showed that empty window instead
+    // of the period the numbers above it describe, so trailing zeros are
+    // trimmed before the window is taken.
+    let last = series.length - 1;
+    while (last >= 0 && series[last].impressions === 0 && series[last].clicks === 0) last -= 1;
+
+    return series.slice(0, last + 1).slice(-30);
   }, [campaigns]);
 
   const recent = [...campaigns]

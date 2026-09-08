@@ -130,7 +130,7 @@ export function AppShell({
 
             <div className="min-w-0 flex-1">
               {title && (
-                <h1 className="truncate text-[17px] font-bold tracking-[-0.02em] text-ink sm:text-[19px]">
+                <h1 className="truncate text-[17px] font-semibold tracking-[-0.032em] text-ink sm:text-[19px]">
                   {title}
                 </h1>
               )}

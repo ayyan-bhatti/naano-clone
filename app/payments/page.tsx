@@ -411,7 +411,7 @@ function Money({
       <p className="micro-label">{label}</p>
       <p
         className={cn(
-          'tabular mt-1.5 text-[22px] font-bold tracking-[-0.025em]',
+          'tabular mt-1.5 text-[22px] font-semibold tracking-[-0.04em]',
           tone === 'money' ? 'text-money' : tone === 'warn' ? 'text-warn' : 'text-ink',
         )}
       >

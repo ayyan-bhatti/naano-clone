@@ -14,7 +14,7 @@ export default function NotFound() {
 
       <main id="main" className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 text-center sm:px-6">
         <p className="tabular text-[13px] font-semibold tracking-[0.08em] text-brand-600">404</p>
-        <h1 className="mt-3 text-[28px] font-extrabold tracking-[-0.03em] text-ink">
+        <h1 className="mt-3 text-[28px] font-semibold tracking-[-0.042em] text-ink">
           That page does not exist.
         </h1>
         <p className="mt-3 text-[14px] leading-relaxed text-ink-soft">

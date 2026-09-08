@@ -426,7 +426,7 @@ function Cell({ label, value, accent }: { label: string; value: string; accent?:
       <p className="micro-label text-[10px]">{label}</p>
       <p
         className={cn(
-          'tabular mt-1 text-[22px] font-bold tracking-[-0.025em]',
+          'tabular mt-1 text-[22px] font-semibold tracking-[-0.04em]',
           accent ? 'text-brand-600' : 'text-ink',
         )}
       >

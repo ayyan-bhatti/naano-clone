@@ -1,15 +1,22 @@
 import type { Metadata, Viewport } from 'next';
-import { Plus_Jakarta_Sans } from 'next/font/google';
+import { Inter } from 'next/font/google';
 
 import { StoreProvider } from '@/lib/store';
 import { ToastProvider } from '@/components/ui/feedback';
 import './globals.css';
 
-const jakarta = Plus_Jakarta_Sans({
+/**
+ * Inter, which is what naano.com actually serves (they ship it as "Inter LP").
+ *
+ * next/font downloads it at build time and self-hosts the result, so there is
+ * no runtime request to a font CDN and nothing to configure - which matters
+ * here because the build has to work with no network and no keys.
+ */
+const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-jakarta',
-  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-inter',
+  weight: ['400', '500', '600', '700'],
 });
 
 /**
@@ -41,18 +48,18 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#f6f7f9',
+  themeColor: '#fcfcfb',
   width: 'device-width',
   initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={jakarta.variable}>
+    <html lang="en" className={inter.variable}>
       <body className="min-h-dvh antialiased">
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[200] focus:rounded-[8px] focus:bg-brand-600 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[200] focus:rounded-[8px] focus:bg-ink focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white"
         >
           Skip to content
         </a>

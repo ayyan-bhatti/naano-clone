@@ -113,14 +113,14 @@ export default function SignUpPage() {
       }
       footer={
         role === null ? (
-          <p className="text-[13px] text-white/50">
+          <p className="text-[13px] text-ink-muted">
             Already have an account?{' '}
-            <Link href="/sign-in" className="font-medium text-white hover:underline">
+            <Link href="/sign-in" className="font-semibold text-brand-600 hover:underline">
               Sign in
             </Link>
           </p>
         ) : (
-          <p className="mx-auto max-w-[380px] text-[12px] leading-relaxed text-white/40">
+          <p className="max-w-[380px] text-[12px] leading-relaxed text-ink-faint">
             Your password is hashed with SHA-256 before it is stored, and never leaves this browser.
             It is still a demo, not real authentication.
           </p>

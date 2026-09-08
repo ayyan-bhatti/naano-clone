@@ -9,13 +9,19 @@ import { SplineCredit, SplineScene } from '@/components/auth/spline-scene';
 import { isSplineEnabled } from '@/lib/spline';
 
 /**
- * Centred auth shell.
+ * Auth shell, on naano's split.
  *
- * The crowd is full-bleed behind the page and the form sits in the middle of it,
- * inside a clearing kept free of faces. Every gaze converges on the centre, so
- * the form is literally the thing being watched - which only works because it is
- * centred. The earlier split-screen version had the crowd looking off toward the
- * right edge, and the effect was much weaker for it.
+ * Their register page is a two-column layout: an off-white column carrying the
+ * form and nothing else, and a solid blue panel carrying the promise. That
+ * structure is reproduced here rather than invented.
+ *
+ * What is ours is what lives in the blue panel. The crowd stands in it and
+ * every gaze converges on the statement in the middle, which is the clearing
+ * the layout already leaves free of faces. When the password field is focused
+ * they all look away, and when you stop typing the nosier ones peek back.
+ *
+ * The panel is hidden below `lg`, exactly as theirs is - a 120-face SVG next to
+ * a phone-width form helps nobody.
  */
 export function AuthLayout({
   mood,
@@ -35,82 +41,82 @@ export function AuthLayout({
   const splineEnabled = isSplineEnabled();
 
   return (
-    <div className="relative isolate flex min-h-dvh flex-col overflow-hidden bg-[#0a0c17]">
-      {/* Depth behind the crowd */}
-      <div
-        aria-hidden
-        className="absolute inset-0 -z-20"
-        style={{
-          backgroundImage:
-            'radial-gradient(60% 55% at 15% 5%, rgba(63,99,232,0.30) 0%, transparent 62%),' +
-            'radial-gradient(55% 60% at 88% 90%, rgba(109,40,217,0.26) 0%, transparent 60%),' +
-            'radial-gradient(45% 40% at 50% 50%, rgba(10,12,23,0.85) 0%, transparent 70%)',
-        }}
-      />
-      <div
-        aria-hidden
-        className="absolute inset-0 -z-20 opacity-[0.14]"
-        style={{
-          backgroundImage:
-            'linear-gradient(rgba(255,255,255,0.10) 1px, transparent 1px),' +
-            'linear-gradient(90deg, rgba(255,255,255,0.10) 1px, transparent 1px)',
-          backgroundSize: '72px 72px',
-          maskImage: 'radial-gradient(70% 60% at 50% 45%, transparent 20%, black 100%)',
-          WebkitMaskImage: 'radial-gradient(70% 60% at 50% 45%, transparent 20%, black 100%)',
-        }}
-      />
+    <div className="flex min-h-dvh bg-ground">
+      {/* ---------------- Form column ---------------- */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="flex items-center justify-between px-6 py-6 sm:px-10">
+          <Link href="/" aria-label="Vouch home">
+            <Logo />
+          </Link>
+          <Link
+            href="/marketplace"
+            className="text-[13px] font-semibold text-ink-soft transition-colors hover:text-ink"
+          >
+            Browse creators
+          </Link>
+        </header>
 
-      {/*
-        Background: the Spline scene when one is configured, otherwise the
-        hand-built crowd. Both are live paths - lib/spline.ts picks between
-        them, and the crowd is the default because it reacts to the form.
-      */}
-      {splineEnabled ? (
-        <SplineScene className="absolute inset-0 -z-10 size-full" />
-      ) : (
-        <WatchingCrowd
-          mood={mood}
-          peekProgress={peekProgress}
-          className="absolute inset-0 -z-10 size-full"
-        />
-      )}
-
-      {/* Header */}
-      <header className="relative z-10 flex items-center justify-between px-5 py-5 sm:px-8 sm:py-6">
-        <Link href="/" aria-label="Vouch home">
-          <Logo className="[&>span:last-child]:text-white" />
-        </Link>
-        <Link
-          href="/marketplace"
-          className="rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 text-[12.5px] font-medium text-white/70 backdrop-blur transition-colors hover:bg-white/10 hover:text-white"
+        <main
+          id="main"
+          className="flex flex-1 flex-col justify-center px-6 pb-12 sm:px-10 lg:px-16"
         >
-          Browse creators
-        </Link>
-      </header>
-
-      {/* Centred form */}
-      <main
-        id="main"
-        className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-8 sm:px-6"
-      >
-        <div className="w-full max-w-[440px]">
-          <div className="mb-5 text-center">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/45">
-              {eyebrow}
-            </p>
-            <h1 className="mt-2.5 text-[26px] font-extrabold leading-[1.12] tracking-[-0.035em] text-white sm:text-[30px]">
+          <div className="mx-auto w-full max-w-[420px]">
+            <p className="text-[13px] font-semibold text-brand-600">{eyebrow}</p>
+            <h1 className="mt-2 text-[30px] font-semibold leading-[1.1] tracking-[-0.042em] text-ink sm:text-[34px]">
               {statement}
             </h1>
-          </div>
 
-          <div className="rounded-[20px] border border-white/12 bg-surface/[0.97] p-6 shadow-pop backdrop-blur-xl sm:p-7">
-            {children}
-          </div>
+            <div className="mt-7">{children}</div>
 
-          {footer && <div className="mt-5 text-center">{footer}</div>}
-          {splineEnabled && <SplineCredit className="mt-4 text-center" />}
+            {footer && <div className="mt-6">{footer}</div>}
+            {splineEnabled && <SplineCredit className="mt-5" />}
+          </div>
+        </main>
+      </div>
+
+      {/* ---------------- The panel ---------------- */}
+      <aside className="relative hidden w-[46%] max-w-[720px] shrink-0 overflow-hidden bg-brand-600 lg:block">
+        {/* Depth, so the flat blue does not read as a colour swatch */}
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              'radial-gradient(70% 55% at 50% 12%, rgba(255,255,255,0.20) 0%, transparent 62%),' +
+              'radial-gradient(60% 50% at 20% 95%, rgba(10,20,70,0.35) 0%, transparent 60%)',
+          }}
+        />
+
+        {splineEnabled ? (
+          <SplineScene className="absolute inset-0 size-full" />
+        ) : (
+          <WatchingCrowd
+            mood={mood}
+            peekProgress={peekProgress}
+            layout="panel"
+            className="absolute inset-0 size-full"
+          />
+        )}
+
+        {/*
+          The statement sits in the clearing the crowd layout keeps free, so
+          every face in the panel is looking at it.
+        */}
+        <div className="relative flex h-full items-center justify-center px-14">
+          <div className="max-w-sm text-center">
+            <p className="text-[26px] font-semibold leading-[1.14] tracking-[-0.035em] text-white">
+              Creators. Brands. Results.
+            </p>
+            <p className="mt-3 text-[14.5px] leading-relaxed text-white/75">
+              Run LinkedIn creator campaigns that drive real business — find the voices your buyers
+              trust, track every post, pay in one click.
+            </p>
+            <p className="mt-8 text-[12px] font-medium uppercase tracking-[0.12em] text-white/50">
+              Built for B2B marketing teams
+            </p>
+          </div>
         </div>
-      </main>
+      </aside>
     </div>
   );
 }

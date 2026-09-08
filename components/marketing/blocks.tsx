@@ -41,7 +41,7 @@ export function PlanCard({
     >
       <span className="micro-label">{name}</span>
       <p className="mt-3 flex items-baseline gap-1.5">
-        <span className="text-[34px] font-bold tracking-[-0.03em] text-ink">{price}</span>
+        <span className="text-[34px] font-semibold tracking-[-0.042em] text-ink">{price}</span>
         <span className="text-[13px] text-ink-muted">{cadence}</span>
       </p>
       <p className="mt-2 text-[13.5px] leading-relaxed text-ink-muted">{body}</p>

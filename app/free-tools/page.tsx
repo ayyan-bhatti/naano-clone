@@ -133,7 +133,7 @@ export default function FreeToolsPage() {
                     </span>
                   </div>
 
-                  <h2 className="mt-4 text-[17px] font-bold tracking-[-0.02em] text-ink">{tool.title}</h2>
+                  <h2 className="mt-4 text-[17px] font-semibold tracking-[-0.032em] text-ink">{tool.title}</h2>
                   <p className="mt-1.5 text-[13.5px] font-medium text-brand-600">{tool.tagline}</p>
                   <p className="mt-3 flex-1 text-[13.5px] leading-relaxed text-ink-muted">{tool.body}</p>
 
@@ -156,7 +156,7 @@ export default function FreeToolsPage() {
         {/* FAQ */}
         <section className="border-t border-line bg-surface">
           <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
-            <h2 className="text-[26px] font-bold tracking-[-0.025em] text-ink sm:text-[30px]">
+            <h2 className="text-[26px] font-semibold tracking-[-0.04em] text-ink sm:text-[30px]">
               Frequently asked questions.
             </h2>
             <div className="mt-6 divide-y divide-line border-y border-line">

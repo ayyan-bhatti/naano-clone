@@ -62,7 +62,7 @@ const minOpacity = (page, sel) =>
   check('hero headline split into lines', heroLines.length === 2, String(heroLines.length));
   check('hero headline is fully visible', heroLines.every((l) => l.opacity > 0.99), JSON.stringify(heroLines.map((l) => l.opacity)));
   check('hero headline is on screen', heroLines.every((l) => l.y > 0 && l.y < 900));
-  check('hero headline still reads correctly', heroLines[0]?.text === 'The creators your');
+  check('hero headline still reads correctly', heroLines[0]?.text === 'The creators your', heroLines[0]?.text);
 
   const heroWords = await p.$$eval('[data-word]', (els) =>
     els.map((e) => parseFloat(getComputedStyle(e).opacity)),
@@ -71,7 +71,12 @@ const minOpacity = (page, sel) =>
   check('every hero word arrived', heroWords.every((o) => o > 0.99));
 
   const heroText = await p.innerText('h1');
-  check('no words were dropped by splitting', /trace the clicks/i.test(await p.innerText('main')));
+  // Splitting rewrites the paragraph's DOM word by word, so the assertion is
+  // that the sentence survives it intact.
+  check(
+    'no words were dropped by splitting',
+    /track the clicks, leads and pipeline/i.test(await p.innerText('main')),
+  );
   check('headline text intact', /creators your/i.test(heroText) && /already trust/i.test(heroText));
 
   // Scroll the whole page in steps, the way a person does.

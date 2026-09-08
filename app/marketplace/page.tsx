@@ -73,7 +73,7 @@ export default function MarketplacePage() {
       <main id="main" className="flex-1">
         <div className="border-b border-line bg-surface">
           <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-            <h1 className="text-[30px] font-extrabold tracking-[-0.03em] text-ink sm:text-[38px]">
+            <h1 className="text-[30px] font-semibold tracking-[-0.042em] text-ink sm:text-[38px]">
               The marketplace
             </h1>
             <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-ink-soft">

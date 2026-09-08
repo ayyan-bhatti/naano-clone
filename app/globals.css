@@ -1,55 +1,81 @@
 @import 'tailwindcss';
 
 /* ---------------------------------------------------------------------------
-   Vouch design tokens.
+   Design tokens, taken from naano.com rather than invented.
 
-   Derived from the Naano teardown (see REVERSE_ENGINEERING.md): near-white
-   ground, white cards, hairline borders, one confident blue, green for money,
-   amber for in-review, uppercase letterspaced micro-labels over large numerals.
-   The palette and the atmospheric band are our own - deliberately not Naano's
-   sky-blue clouds.
+   Every value below was read out of the live site with
+   scripts/extract-design.mjs, which pulls computed styles from the rendered
+   DOM instead of eyedropping a screenshot - so these are the colours the
+   browser actually painted, the weights actually set, and the shadows actually
+   applied. The raw capture is in research/reference/design-tokens.json.
+
+   The three things that most define their look, and which a re-skin gets wrong
+   if it only copies the palette:
+
+   1. The neutrals are WARM. Ground is #fcfcfb and borders are #eceae6 - a
+      paper white, not the blue-grey most SaaS templates default to.
+   2. Headings are weight 600 with roughly -0.04em tracking, not 700/800 at
+      normal tracking. That single pair is most of why their type looks
+      designed rather than bolded.
+   3. The primary button is near-black, not the accent colour. Blue is reserved
+      for links, scores and the matching bar.
 --------------------------------------------------------------------------- */
 @theme {
-  /* Neutrals - very slightly warm slate, so it does not read as default Tailwind */
-  --color-ground: #f6f7f9;
+  /* Warm paper neutrals - measured off naano.com, not a grey ramp. */
+  --color-ground: #fcfcfb;
   --color-surface: #ffffff;
-  --color-sunken: #f1f3f7;
-  --color-line: #e5e8ef;
-  --color-line-strong: #d3d8e3;
+  --color-sunken: #f6f5f2;
+  --color-line: #eceae6;
+  --color-line-strong: #ddd9d2;
 
-  --color-ink: #0d1220;
-  --color-ink-soft: #47506a;
-  --color-ink-muted: #7b849c;
-  --color-ink-faint: #9aa3b8;
+  --color-ink: #17181c;
+  --color-ink-soft: #43454c;
+  --color-ink-muted: #6b6d75;
+  --color-ink-faint: #9b9da3;
 
-  /* Primary - deep indigo-leaning blue */
-  --color-brand-50: #eef2ff;
-  --color-brand-100: #dfe6ff;
-  --color-brand-200: #c3d0ff;
-  --color-brand-300: #9db2ff;
-  --color-brand-500: #3f63e8;
-  --color-brand-600: #2f4fd8;
-  --color-brand-700: #2540b4;
-  --color-brand-900: #1a2a6d;
+  /* Sky - their signature. The hero, card bands and section grounds. */
+  --color-sky-50: #f4fbfe;
+  --color-sky-100: #e4f3fc;
+  --color-sky-200: #cfe7f6;
+  --color-sky-300: #b3d8ef;
+  --color-sky-500: #7fb4cd;
+  --color-sky-700: #315b7c;
 
-  /* Signals */
-  --color-money: #0b8f5f;
-  --color-money-soft: #e6f6ef;
-  --color-warn: #a5620a;
-  --color-warn-soft: #fdf1dc;
-  --color-danger: #b4232a;
-  --color-danger-soft: #fdeaea;
-  --color-live: #6d28d9;
-  --color-live-soft: #f1eafe;
+  /* Accent - links, match scores, the matching bar. Never the primary button. */
+  --color-brand-50: #eff5ff;
+  --color-brand-100: #dbe8fe;
+  --color-brand-200: #bfd6fd;
+  --color-brand-300: #93b8fb;
+  --color-brand-500: #3b7bf0;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4fd0;
+  --color-brand-900: #17307a;
 
-  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Signals. Desaturated a step to sit next to warm neutrals without shouting. */
+  --color-money: #0f7a52;
+  --color-money-soft: #e7f5ee;
+  --color-warn: #9a5b0c;
+  --color-warn-soft: #fbf1e0;
+  --color-danger: #b02a2f;
+  --color-danger-soft: #fceceb;
+  --color-live: #2563eb;
+  --color-live-soft: #e8f0fe;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   --radius-card: 16px;
-  --radius-control: 10px;
+  --radius-control: 12px;
 
-  --shadow-card: 0 1px 2px rgb(13 18 32 / 0.04), 0 1px 3px rgb(13 18 32 / 0.03);
-  --shadow-lift: 0 8px 24px -6px rgb(13 18 32 / 0.10), 0 2px 6px rgb(13 18 32 / 0.05);
-  --shadow-pop: 0 16px 48px -12px rgb(13 18 32 / 0.18);
+  /*
+     Their elevation is a hairline ring plus a wide, blue-tinted, low-opacity
+     shadow - light coming through a bright sky rather than a neutral drop
+     shadow. The negative spread on the larger two is what keeps them soft
+     instead of muddy.
+  */
+  --shadow-card: 0 0 0 1px rgb(17 19 24 / 0.05), 0 1px 2px rgb(23 24 28 / 0.04);
+  --shadow-lift: 0 0 0 1px rgb(17 19 24 / 0.04), 0 8px 22px rgb(52 91 111 / 0.10);
+  --shadow-pop: 0 24px 60px -24px rgb(44 83 106 / 0.42), 0 0 0 1px rgb(17 19 24 / 0.06);
+  --shadow-sky: 0 22px 58px -44px rgb(56 96 128 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.9);
 }
 
 @layer base {
@@ -67,6 +93,17 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+  }
+
+  /*
+     Their heading treatment, set once here so no component has to remember it:
+     weight 600 with tight negative tracking. Components still choose the size.
+  */
+  h1,
+  h2,
+  h3 {
+    font-weight: 600;
+    letter-spacing: -0.04em;
   }
 
   /* Stats and money must never shift width while animating. */
@@ -98,18 +135,29 @@
     color: var(--color-ink-muted);
   }
 
-  /* Our signature atmospheric band - a soft aurora mesh rather than clouds. */
-  .aurora {
-    background-image:
-      radial-gradient(80% 120% at 15% 0%, rgb(63 99 232 / 0.16) 0%, transparent 55%),
-      radial-gradient(70% 110% at 85% 10%, rgb(109 40 217 / 0.12) 0%, transparent 55%),
-      radial-gradient(60% 100% at 50% 100%, rgb(11 143 95 / 0.08) 0%, transparent 60%);
+  /*
+     The sky gradient behind their hero and section grounds. Clouds themselves
+     are drawn as SVG in components/marketing/sky.tsx rather than loaded as a
+     photograph - it scales to any viewport, weighs nothing, and works offline.
+  */
+  .sky {
+    background-image: linear-gradient(
+      180deg,
+      var(--color-sky-300) 0%,
+      var(--color-sky-200) 34%,
+      var(--color-sky-100) 62%,
+      var(--color-sky-50) 84%,
+      var(--color-ground) 100%
+    );
   }
 
+  /* The pale band across the top of a creator card. */
   .card-band {
-    background-image:
-      radial-gradient(120% 160% at 20% 0%, rgb(63 99 232 / 0.20) 0%, transparent 60%),
-      radial-gradient(100% 140% at 90% 20%, rgb(109 40 217 / 0.14) 0%, transparent 60%);
+    background-image: linear-gradient(
+      180deg,
+      var(--color-sky-200) 0%,
+      var(--color-sky-50) 100%
+    );
   }
 }
 

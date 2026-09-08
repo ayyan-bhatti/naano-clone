@@ -146,7 +146,7 @@ function Kit({ creator }: { creator: Creator }) {
             <div className="flex flex-wrap items-start gap-5">
               <Avatar seed={creator.avatarSeed} name={creator.name} size="xl" ring />
               <div className="min-w-0 flex-1">
-                <h1 className="flex items-center gap-2 text-[24px] font-bold tracking-[-0.025em] text-ink sm:text-[28px]">
+                <h1 className="flex items-center gap-2 text-[24px] font-semibold tracking-[-0.04em] text-ink sm:text-[28px]">
                   {creator.name}
                   {creator.verified && (
                     <BadgeCheck className="size-5 shrink-0 text-brand-600" aria-label="Verified" />
@@ -170,7 +170,7 @@ function Kit({ creator }: { creator: Creator }) {
               </div>
               <div className="shrink-0 text-right">
                 <p className="micro-label">From</p>
-                <p className="tabular text-[24px] font-bold tracking-[-0.02em] text-ink">
+                <p className="tabular text-[24px] font-semibold tracking-[-0.032em] text-ink">
                   {formatEur(creator.pricePerPost)}
                 </p>
                 <p className="text-[11.5px] text-ink-muted">per sponsored post</p>
@@ -303,7 +303,7 @@ function Kit({ creator }: { creator: Creator }) {
 function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
     <div className="bg-surface p-3.5 text-center">
-      <dd className={cn('tabular text-[17px] font-bold tracking-[-0.02em]', accent ? 'text-money' : 'text-ink')}>
+      <dd className={cn('tabular text-[17px] font-semibold tracking-[-0.032em]', accent ? 'text-money' : 'text-ink')}>
         {value}
       </dd>
       <dt className="micro-label mt-0.5 text-[10px]">{label}</dt>

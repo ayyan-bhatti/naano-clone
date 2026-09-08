@@ -80,13 +80,13 @@ export function CreatorProfile({ creator: seeded }: { creator: Creator }) {
 
       {/* ---------- Header ---------- */}
       <div className="mt-4 overflow-hidden rounded-[16px] border border-line bg-surface shadow-card">
-        <div className="card-band h-24 bg-brand-50" />
+        <div className="card-band h-24 bg-sky-100" />
         <div className="px-5 pb-5 sm:px-7 sm:pb-7">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div className="flex min-w-0 items-end gap-4">
               <Avatar seed={creator.avatarSeed} name={creator.name} size="xl" ring className="-mt-10 shrink-0" />
               <div className="min-w-0 pb-0.5">
-                <h1 className="flex items-center gap-2 text-[22px] font-bold tracking-[-0.02em] text-ink sm:text-[26px]">
+                <h1 className="flex items-center gap-2 text-[22px] font-semibold tracking-[-0.032em] text-ink sm:text-[26px]">
                   {creator.name}
                   {creator.verified && <BadgeCheck className="size-5 shrink-0 text-brand-600" aria-label="Verified creator" />}
                 </h1>

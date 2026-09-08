@@ -91,9 +91,9 @@ export default function SignInPage() {
       eyebrow="Welcome back"
       statement="Your creators have been busy."
       footer={
-        <p className="text-[13px] text-white/50">
+        <p className="text-[13px] text-ink-muted">
           No account?{' '}
-          <Link href="/sign-up" className="font-medium text-white hover:underline">
+          <Link href="/sign-up" className="font-semibold text-brand-600 hover:underline">
             Create one
           </Link>
         </p>

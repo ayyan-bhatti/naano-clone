@@ -11,6 +11,13 @@ export function formatNumber(n: number): string {
 }
 
 export function formatEur(n: number, opts: { compact?: boolean } = {}): string {
+  // Compact has to keep going past a thousand thousands. Without the millions
+  // branch an attributed-pipeline figure renders as "EUR 1535.9K", which is
+  // both wrong and the kind of thing that makes every other number on the page
+  // look untrustworthy.
+  if (opts.compact && n >= 1_000_000) {
+    return `€${(n / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`;
+  }
   if (opts.compact && n >= 1000) {
     return `€${(n / 1000).toFixed(1).replace(/\.0$/, '')}K`;
   }

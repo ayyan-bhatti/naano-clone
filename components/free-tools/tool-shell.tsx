@@ -80,7 +80,7 @@ export function ToolPage({
         {faqs && faqs.length > 0 && (
           <section className="border-t border-line">
             <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
-              <h2 className="text-[24px] font-bold tracking-[-0.025em] text-ink sm:text-[28px]">
+              <h2 className="text-[24px] font-semibold tracking-[-0.04em] text-ink sm:text-[28px]">
                 Frequently asked questions.
               </h2>
               <div className="mt-6 divide-y divide-line border-y border-line">
@@ -97,7 +97,7 @@ export function ToolPage({
         {related && related.length > 0 && (
           <section className="border-t border-line bg-surface">
             <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
-              <h2 className="text-[20px] font-bold tracking-[-0.02em] text-ink">More free tools.</h2>
+              <h2 className="text-[20px] font-semibold tracking-[-0.032em] text-ink">More free tools.</h2>
               <div className="mt-5 grid gap-4 sm:grid-cols-3">
                 {related.map((r, i) => (
                   <Reveal key={r.href} delay={i * 50}>
@@ -266,7 +266,7 @@ export function MethodSection({
 }) {
   return (
     <div>
-      <h2 className="text-[24px] font-bold tracking-[-0.025em] text-ink sm:text-[28px]">{title}</h2>
+      <h2 className="text-[24px] font-semibold tracking-[-0.04em] text-ink sm:text-[28px]">{title}</h2>
       {intro && <p className="mt-3 max-w-3xl text-[14px] leading-relaxed text-ink-soft">{intro}</p>}
       <div className="mt-6">{children}</div>
     </div>

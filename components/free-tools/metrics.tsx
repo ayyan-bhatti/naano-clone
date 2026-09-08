@@ -66,7 +66,7 @@ export function MetricCard({
   return (
     <div className={cn('rounded-[12px] border border-line bg-ground p-4', className)}>
       <span className="micro-label text-[10px]">{label}</span>
-      <p className={cn('tabular mt-1.5 text-[22px] font-bold tracking-[-0.02em]', tones[tone])}>
+      <p className={cn('tabular mt-1.5 text-[22px] font-semibold tracking-[-0.032em]', tones[tone])}>
         <Counter value={value} format={format} />
       </p>
       {caption && <p className="mt-1 text-[11.5px] leading-relaxed text-ink-muted">{caption}</p>}

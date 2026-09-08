@@ -1,0 +1,842 @@
+{
+  "home": {
+    "title": "Naano: B2B LinkedIn Creator Marketplace",
+    "body": {
+      "bg": "rgb(252, 252, 251)",
+      "color": "lab(84.7652 -1.94535 -7.93337)",
+      "font": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\""
+    },
+    "fonts": [
+      "Inter LP  ×838",
+      "ui-sans-serif  ×9",
+      "Plus Jakarta Sans  ×1"
+    ],
+    "textColors": [
+      "rgb(17, 19, 24)  ×208",
+      "rgb(23, 24, 28)  ×76",
+      "rgb(82, 104, 117)  ×30",
+      "rgb(155, 157, 163)  ×27",
+      "rgb(0, 0, 0)  ×14",
+      "rgb(85, 87, 94)  ×14",
+      "rgb(255, 255, 255)  ×13",
+      "rgb(49, 91, 124)  ×13",
+      "rgb(139, 141, 148)  ×11",
+      "rgb(38, 39, 44)  ×11",
+      "rgb(138, 140, 146)  ×9",
+      "rgb(131, 144, 162)  ×6",
+      "rgb(37, 99, 235)  ×5",
+      "rgb(84, 119, 138)  ×5"
+    ],
+    "backgrounds": [
+      "rgba(255, 255, 255, 0.96)  ×9",
+      "rgb(255, 255, 255)  ×8",
+      "rgba(255, 255, 255, 0.94)  ×8",
+      "rgba(255, 255, 255, 0.9)  ×7",
+      "rgb(49, 91, 124)  ×7",
+      "rgb(252, 252, 251)  ×5",
+      "rgb(23, 24, 28)  ×5",
+      "rgba(255, 255, 255, 0.74)  ×5",
+      "rgb(244, 251, 254)  ×5",
+      "rgba(255, 255, 255, 0.56)  ×5",
+      "rgba(220, 239, 250, 0.72)  ×5",
+      "rgba(220, 239, 250, 0.86)  ×4",
+      "rgba(255, 255, 255, 0.64)  ×4",
+      "rgb(237, 235, 231)  ×4"
+    ],
+    "radii": [
+      "50%  ×38",
+      "999px  ×19",
+      "8px  ×11",
+      "14px  ×10",
+      "12px  ×7",
+      "26px  ×7",
+      "3px  ×7",
+      "20px  ×7",
+      "6px  ×7",
+      "24px  ×5",
+      "18px  ×5",
+      "16px  ×4",
+      "28px  ×4",
+      "22px  ×4"
+    ],
+    "shadows": [
+      "rgba(52, 91, 111, 0.1) 0px 8px 22px 0px  ×7",
+      "rgba(17, 19, 24, 0.06) 0px 0px 0px 1px  ×7",
+      "rgba(53, 89, 108, 0.16) 0px 12px 28px 0px, rgba(127, 180, 205, 0.18) 0px 0px 0px 1px  ×5",
+      "rgba(56, 96, 128, 0.38) 0px 22px 58px -44px  ×5",
+      "rgba(56, 96, 128, 0.32) 0px 20px 48px -32px  ×4",
+      "rgba(46, 86, 108, 0.42) 0px 22px 48px -38px, rgb(255, 255, 255) 0px 1px 0px 0px inset  ×4",
+      "rgba(44, 83, 106, 0.42) 0px 28px 66px -46px, rgb(255, 255, 255) 0px 1px 0px 0px inset  ×4",
+      "rgba(47, 83, 102, 0.14) 0px 10px 24px 0px, rgba(138, 186, 207, 0.18) 0px 0px 0px 1px  ×4"
+    ],
+    "borders": [
+      "1px rgb(236, 234, 230)  ×15",
+      "1.16111px rgba(255, 255, 255, 0.92)  ×8",
+      "1.16111px rgba(150, 190, 211, 0.48)  ×7",
+      "1.16111px rgba(143, 187, 209, 0.4)  ×5",
+      "1.16111px rgba(255, 255, 255, 0.9)  ×5",
+      "1px rgba(255, 255, 255, 0.96)  ×5",
+      "1.16111px rgba(17, 19, 24, 0.08)  ×4",
+      "1.16111px rgba(203, 224, 238, 0.72)  ×4"
+    ],
+    "h1": [
+      {
+        "text": "The B2B LinkedInCreator Marketplace.",
+        "font": "Inter LP",
+        "size": "77px",
+        "weight": "600",
+        "lineHeight": "80.85px",
+        "letterSpacing": "-3.08px",
+        "color": "rgb(23, 24, 28)"
+      }
+    ],
+    "h2": [
+      {
+        "text": "Work with all the best creators.",
+        "font": "Inter LP",
+        "size": "74.88px",
+        "weight": "600",
+        "lineHeight": "74.1312px",
+        "letterSpacing": "-3.89376px",
+        "color": "rgb(17, 19, 24)"
+      },
+      {
+        "text": "Run creator campaigns from one place.",
+        "font": "Inter LP",
+        "size": "51.84px",
+        "weight": "600",
+        "lineHeight": "53.3952px",
+        "letterSpacing": "-2.3328px",
+        "color": "rgb(17, 19, 24)"
+      },
+      {
+        "text": "Real teams. Measurable pipeline.",
+        "font": "Inter LP",
+        "size": "51.84px",
+        "weight": "600",
+        "lineHeight": "53.3952px",
+        "letterSpacing": "-2.3328px",
+        "color": "rgb(17, 19, 24)"
+      },
+      {
+        "text": "Proven across thousands of campaigns.",
+        "font": "Inter LP",
+        "size": "51.84px",
+        "weight": "600",
+        "lineHeight": "53.3952px",
+        "letterSpacing": "-2.3328px",
+        "color": "rgb(17, 19, 24)"
+      }
+    ],
+    "h3": [
+      {
+        "text": "Find creators your buyers trust",
+        "font": "Inter LP",
+        "size": "17px",
+        "weight": "650",
+        "lineHeight": "22.1px",
+        "letterSpacing": "-0.34px",
+        "color": "rgb(17, 19, 24)"
+      },
+      {
+        "text": "Build a campaign brief in minutes",
+        "font": "Inter LP",
+        "size": "17px",
+        "weight": "650",
+        "lineHeight": "22.1px",
+        "letterSpacing": "-0.34px",
+        "color": "rgb(17, 19, 24)"
+      },
+      {
+        "text": "Manage every collaboration",
+        "font": "Inter LP",
+        "size": "17px",
+        "weight": "650",
+        "lineHeight": "22.1px",
+        "letterSpacing": "-0.34px",
+        "color": "rgb(17, 19, 24)"
+      },
+      {
+        "text": "Track reach, clicks, and leads",
+        "font": "Inter LP",
+        "size": "17px",
+        "weight": "650",
+        "lineHeight": "22.1px",
+        "letterSpacing": "-0.34px",
+        "color": "rgb(17, 19, 24)"
+      }
+    ],
+    "p": [
+      {
+        "text": "Find the creators your buyers already trust, launch campaigns in days,",
+        "font": "Inter LP",
+        "size": "21px",
+        "weight": "400",
+        "lineHeight": "31.5px",
+        "letterSpacing": "normal",
+        "color": "rgb(67, 69, 76)"
+      },
+      {
+        "text": "Find the right B2B voices, compare their audience fit, and book every ",
+        "font": "Inter LP",
+        "size": "20.88px",
+        "weight": "400",
+        "lineHeight": "31.7376px",
+        "letterSpacing": "normal",
+        "color": "rgb(82, 88, 97)"
+      },
+      {
+        "text": "Find the right voices, launch faster, and connect every post to measur",
+        "font": "Inter LP",
+        "size": "19px",
+        "weight": "400",
+        "lineHeight": "28.5px",
+        "letterSpacing": "normal",
+        "color": "rgb(85, 87, 94)"
+      },
+      {
+        "text": "See how B2B teams turn creator trust into attributable demand with Naa",
+        "font": "Inter LP",
+        "size": "19px",
+        "weight": "400",
+        "lineHeight": "normal",
+        "letterSpacing": "normal",
+        "color": "rgb(85, 87, 94)"
+      }
+    ],
+    "buttons": [
+      {
+        "text": "Launch a campaign",
+        "bg": "rgb(23, 24, 28)",
+        "color": "rgb(255, 255, 255)",
+        "radius": "12px",
+        "height": 44,
+        "padding": "16px 28px",
+        "fontSize": "16px",
+        "fontWeight": "600",
+        "border": "0px lab(90.952 0 -0.0000119209)",
+        "shadow": "none"
+      },
+      {
+        "text": "Reject",
+        "bg": "oklab(0.999994 0.0000455678 0.0000200868 / 0.06)",
+        "color": "rgb(255, 255, 255)",
+        "radius": "14px",
+        "height": 44,
+        "padding": "10px 16px",
+        "fontSize": "14px",
+        "fontWeight": "600",
+        "border": "1px oklab(0.999994 0.0000455678 0.0000200868 / 0.25)",
+        "shadow": "none"
+      },
+      {
+        "text": "Allow",
+        "bg": "oklab(0.999994 0.0000455678 0.0000200868 / 0.06)",
+        "color": "rgb(255, 255, 255)",
+        "radius": "14px",
+        "height": 44,
+        "padding": "10px 16px",
+        "fontSize": "14px",
+        "fontWeight": "600",
+        "border": "1px oklab(0.999994 0.0000455678 0.0000200868 / 0.25)",
+        "shadow": "none"
+      }
+    ],
+    "sectionCount": 3,
+    "fontLinks": []
+  },
+  "pricing": {
+    "title": "Pricing | Naano",
+    "body": {
+      "bg": "lab(100 0 0)",
+      "color": "lab(84.7652 -1.94535 -7.93337)",
+      "font": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\""
+    },
+    "fonts": [
+      "Plus Jakarta Sans  ×192",
+      "ui-sans-serif  ×9"
+    ],
+    "textColors": [
+      "lab(84.7652 -1.94535 -7.93337)  ×62",
+      "rgb(120, 119, 116)  ×38",
+      "lab(48.496 0 0)  ×21",
+      "lab(2.75381 0 0)  ×20",
+      "rgb(255, 255, 255)  ×14",
+      "rgba(255, 255, 255, 0.35)  ×5",
+      "rgb(22, 82, 240)  ×2",
+      "rgb(55, 53, 47)  ×1",
+      "rgb(23, 24, 28)  ×1",
+      "oklab(0.999994 0.0000455678 0.0000200868 / 0.45)  ×1",
+      "rgb(10, 10, 10)  ×1",
+      "lab(77.5052 -6.4629 -36.42)  ×1"
+    ],
+    "backgrounds": [
+      "rgb(255, 255, 255)  ×6",
+      "rgb(243, 244, 246)  ×3",
+      "rgb(28, 27, 25)  ×3",
+      "oklab(0.999994 0.0000455678 0.0000200868 / 0.06)  ×2",
+      "rgb(22, 82, 240)  ×1",
+      "rgb(55, 53, 47)  ×1",
+      "rgb(23, 24, 28)  ×1",
+      "rgb(10, 10, 10)  ×1",
+      "rgba(255, 255, 255, 0.04)  ×1",
+      "lab(4.53267 0.177249 -11.0199 / 0.95)  ×1"
+    ],
+    "radii": [
+      "14px  ×5",
+      "18px  ×3",
+      "8px  ×2",
+      "10px  ×1",
+      "3.35544e+07px  ×1"
+    ],
+    "shadows": [
+      "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.25) 0px 25px 50px -12px  ×1"
+    ],
+    "borders": [
+      "1px rgb(229, 231, 235)  ×7",
+      "1px oklab(0.999994 0.0000455678 0.0000200868 / 0.25)  ×2",
+      "1px oklab(0.999994 0.0000455678 0.0000200868 / 0.2)  ×1",
+      "1px rgba(255, 255, 255, 0.08)  ×1",
+      "1px rgba(255, 255, 255, 0.06)  ×1",
+      "1px oklab(0.999994 0.0000455678 0.0000200868 / 0.15)  ×1"
+    ],
+    "h1": [
+      {
+        "text": "Naano pricing",
+        "font": "Plus Jakarta Sans",
+        "size": "56px",
+        "weight": "300",
+        "lineHeight": "61.6px",
+        "letterSpacing": "-1.4px",
+        "color": "lab(2.75381 0 0)"
+      }
+    ],
+    "h2": [
+      {
+        "text": "How per-post pricing works",
+        "font": "Plus Jakarta Sans",
+        "size": "36px",
+        "weight": "300",
+        "lineHeight": "41.4px",
+        "letterSpacing": "-0.72px",
+        "color": "lab(2.75381 0 0)"
+      },
+      {
+        "text": "Pricing FAQ",
+        "font": "Plus Jakarta Sans",
+        "size": "36px",
+        "weight": "300",
+        "lineHeight": "41.4px",
+        "letterSpacing": "-0.72px",
+        "color": "lab(2.75381 0 0)"
+      },
+      {
+        "text": "Start free, upgrade when you're ready.",
+        "font": "Plus Jakarta Sans",
+        "size": "52px",
+        "weight": "700",
+        "lineHeight": "56.16px",
+        "letterSpacing": "-1.56px",
+        "color": "rgb(255, 255, 255)"
+      },
+      {
+        "text": "Audience measurement",
+        "font": "Plus Jakarta Sans",
+        "size": "16px",
+        "weight": "600",
+        "lineHeight": "24px",
+        "letterSpacing": "normal",
+        "color": "rgb(255, 255, 255)"
+      }
+    ],
+    "h3": [
+      {
+        "text": "What's the minimum budget to start on Naano?",
+        "font": "Plus Jakarta Sans",
+        "size": "18px",
+        "weight": "600",
+        "lineHeight": "28px",
+        "letterSpacing": "normal",
+        "color": "lab(2.75381 0 0)"
+      },
+      {
+        "text": "How much does a single post cost?",
+        "font": "Plus Jakarta Sans",
+        "size": "18px",
+        "weight": "600",
+        "lineHeight": "28px",
+        "letterSpacing": "normal",
+        "color": "lab(2.75381 0 0)"
+      },
+      {
+        "text": "Can I upgrade to Managed Campaigns or cancel anytime?",
+        "font": "Plus Jakarta Sans",
+        "size": "18px",
+        "weight": "600",
+        "lineHeight": "28px",
+        "letterSpacing": "normal",
+        "color": "lab(2.75381 0 0)"
+      },
+      {
+        "text": "How do creator payouts work?",
+        "font": "Plus Jakarta Sans",
+        "size": "18px",
+        "weight": "600",
+        "lineHeight": "28px",
+        "letterSpacing": "normal",
+        "color": "lab(2.75381 0 0)"
+      }
+    ],
+    "p": [
+      {
+        "text": "Pricing",
+        "font": "Plus Jakarta Sans",
+        "size": "12px",
+        "weight": "600",
+        "lineHeight": "16px",
+        "letterSpacing": "1.68px",
+        "color": "rgb(22, 82, 240)"
+      },
+      {
+        "text": "Naano offers two ways to run LinkedIn creator campaigns. Self-Serve co",
+        "font": "Plus Jakarta Sans",
+        "size": "18px",
+        "weight": "400",
+        "lineHeight": "29.25px",
+        "letterSpacing": "normal",
+        "color": "lab(48.496 0 0)"
+      },
+      {
+        "text": "Campaign spend is separate from the plan fee. No lock-in, cancel anyti",
+        "font": "Plus Jakarta Sans",
+        "size": "14px",
+        "weight": "400",
+        "lineHeight": "20px",
+        "letterSpacing": "normal",
+        "color": "lab(48.496 0 0)"
+      },
+      {
+        "text": "How it works",
+        "font": "Plus Jakarta Sans",
+        "size": "12px",
+        "weight": "600",
+        "lineHeight": "16px",
+        "letterSpacing": "1.68px",
+        "color": "rgb(22, 82, 240)"
+      }
+    ],
+    "buttons": [
+      {
+        "text": "Sign in",
+        "bg": "rgb(22, 82, 240)",
+        "color": "rgb(255, 255, 255)",
+        "radius": "10px",
+        "height": 36,
+        "padding": "0px 16px",
+        "fontSize": "13px",
+        "fontWeight": "600",
+        "border": "0px lab(90.952 0 -0.0000119209)",
+        "shadow": "none"
+      },
+      {
+        "text": "Get started",
+        "bg": "rgb(55, 53, 47)",
+        "color": "rgb(255, 255, 255)",
+        "radius": "3.35544e+07px",
+        "height": 32,
+        "padding": "8px 16px",
+        "fontSize": "13px",
+        "fontWeight": "500",
+        "border": "0px lab(90.952 0 -0.0000119209)",
+        "shadow": "none"
+      },
+      {
+        "text": "Book a campaign call",
+        "bg": "rgb(23, 24, 28)",
+        "color": "rgb(255, 255, 255)",
+        "radius": "14px",
+        "height": 40,
+        "padding": "0px 20px",
+        "fontSize": "14px",
+        "fontWeight": "600",
+        "border": "0px lab(90.952 0 -0.0000119209)",
+        "shadow": "none"
+      },
+      {
+        "text": "Start for free",
+        "bg": "rgb(255, 255, 255)",
+        "color": "rgb(10, 10, 10)",
+        "radius": "14px",
+        "height": 48,
+        "padding": "0px 32px",
+        "fontSize": "15px",
+        "fontWeight": "600",
+        "border": "0px lab(90.952 0 -0.0000119209)",
+        "shadow": "none"
+      },
+      {
+        "text": "Reject",
+        "bg": "oklab(0.999994 0.0000455678 0.0000200868 / 0.06)",
+        "color": "rgb(255, 255, 255)",
+        "radius": "14px",
+        "height": 44,
+        "padding": "10px 16px",
+        "fontSize": "14px",
+        "fontWeight": "600",
+        "border": "1px oklab(0.999994 0.0000455678 0.0000200868 / 0.25)",
+        "shadow": "none"
+      },
+      {
+        "text": "Allow",
+        "bg": "oklab(0.999994 0.0000455678 0.0000200868 / 0.06)",
+        "color": "rgb(255, 255, 255)",
+        "radius": "14px",
+        "height": 44,
+        "padding": "10px 16px",
+        "fontSize": "14px",
+        "fontWeight": "600",
+        "border": "1px oklab(0.999994 0.0000455678 0.0000200868 / 0.25)",
+        "shadow": "none"
+      }
+    ],
+    "sectionCount": 7,
+    "fontLinks": []
+  },
+  "creators": {
+    "title": "Get paid for your LinkedIn content: Naano for creators",
+    "body": {
+      "bg": "rgb(252, 252, 251)",
+      "color": "lab(84.7652 -1.94535 -7.93337)",
+      "font": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\""
+    },
+    "fonts": [
+      "Inter LP  ×742",
+      "ui-sans-serif  ×9",
+      "Georgia  ×6",
+      "Plus Jakarta Sans  ×1"
+    ],
+    "textColors": [
+      "rgb(23, 24, 28)  ×242",
+      "rgb(82, 104, 117)  ×30",
+      "rgb(37, 99, 235)  ×21",
+      "rgb(155, 157, 163)  ×19",
+      "rgb(139, 141, 148)  ×17",
+      "rgb(0, 0, 0)  ×13",
+      "rgb(255, 255, 255)  ×12",
+      "rgb(17, 19, 24)  ×12",
+      "rgb(85, 87, 94)  ×9",
+      "rgb(138, 140, 146)  ×9",
+      "rgb(38, 39, 44)  ×9",
+      "rgb(43, 45, 51)  ×6",
+      "rgb(22, 163, 74)  ×5",
+      "rgb(110, 112, 118)  ×5"
+    ],
+    "backgrounds": [
+      "rgb(255, 255, 255)  ×25",
+      "rgb(237, 235, 231)  ×16",
+      "rgb(10, 102, 194)  ×6",
+      "rgb(23, 24, 28)  ×5",
+      "rgba(255, 255, 255, 0.74)  ×5",
+      "rgba(255, 255, 255, 0.56)  ×5",
+      "rgb(234, 243, 255)  ×4",
+      "rgba(255, 255, 255, 0.64)  ×4",
+      "rgb(238, 247, 251)  ×4",
+      "rgba(239, 248, 252, 0.74)  ×4",
+      "rgba(248, 252, 254, 0.86)  ×4",
+      "rgba(255, 255, 255, 0.9)  ×4",
+      "rgb(252, 252, 251)  ×3",
+      "rgb(197, 235, 253)  ×3"
+    ],
+    "radii": [
+      "50%  ×20",
+      "16px  ×15",
+      "999px  ×11",
+      "22px  ×9",
+      "6px  ×8",
+      "14px  ×6",
+      "4px 4px 0px 0px  ×6",
+      "18px  ×6",
+      "20px  ×6",
+      "8px  ×4",
+      "26px  ×4",
+      "17px  ×4",
+      "12px  ×3",
+      "7px  ×3"
+    ],
+    "shadows": [
+      "rgba(23, 24, 28, 0.05) 0px 1px 2px 0px, rgba(23, 24, 28, 0.28) 0px 12px 28px -20px  ×6",
+      "rgba(35, 75, 114, 0.09) 0px 22px 55px 0px, rgba(255, 255, 255, 0.98) 0px 1px 0px 0px inset  ×5",
+      "rgba(23, 24, 28, 0.35) 0px 12px 26px -12px  ×5",
+      "rgba(23, 24, 28, 0.28) 0px 18px 40px -22px  ×4",
+      "rgba(46, 86, 108, 0.42) 0px 22px 48px -38px, rgb(255, 255, 255) 0px 1px 0px 0px inset  ×4",
+      "rgba(44, 83, 106, 0.42) 0px 28px 66px -46px, rgb(255, 255, 255) 0px 1px 0px 0px inset  ×4",
+      "rgba(47, 83, 102, 0.14) 0px 10px 24px 0px, rgba(138, 186, 207, 0.18) 0px 0px 0px 1px  ×4",
+      "rgba(39, 78, 99, 0.5) 0px 18px 38px -30px, rgb(255, 255, 255) 0px 1px 0px 0px inset  ×4"
+    ],
+    "borders": [
+      "1.16111px rgb(237, 235, 231)  ×20",
+      "1.16111px rgb(236, 234, 230)  ×11",
+      "1.16111px rgba(255, 255, 255, 0.92)  ×10",
+      "1.16111px rgb(255, 255, 255)  ×9",
+      "1.16111px rgba(255, 255, 255, 0.9)  ×9",
+      "1.16111px rgba(170, 204, 221, 0.5)  ×4",
+      "2.32222px rgba(255, 255, 255, 0.96)  ×4",
+      "1.16111px rgba(255, 255, 255, 0.96)  ×4"
+    ],
+    "h1": [
+      {
+        "text": "Get paid to post on LinkedIn",
+        "font": "Inter LP",
+        "size": "80px",
+        "weight": "600",
+        "lineHeight": "84px",
+        "letterSpacing": "-3.2px",
+        "color": "rgb(23, 24, 28)"
+      }
+    ],
+    "h2": [
+      {
+        "text": "Monetize your content on Naano.",
+        "font": "Inter LP",
+        "size": "50px",
+        "weight": "600",
+        "lineHeight": "52px",
+        "letterSpacing": "-1.75px",
+        "color": "rgb(23, 24, 28)"
+      },
+      {
+        "text": "For creators who don't wantthe administrative burden.",
+        "font": "Inter LP",
+        "size": "52px",
+        "weight": "600",
+        "lineHeight": "55.12px",
+        "letterSpacing": "-1.56px",
+        "color": "rgb(23, 24, 28)"
+      },
+      {
+        "text": "Real posts from real creators.",
+        "font": "Inter LP",
+        "size": "52px",
+        "weight": "600",
+        "lineHeight": "56.16px",
+        "letterSpacing": "-1.56px",
+        "color": "rgb(23, 24, 28)"
+      },
+      {
+        "text": "What creators say.",
+        "font": "Inter LP",
+        "size": "52px",
+        "weight": "600",
+        "lineHeight": "normal",
+        "letterSpacing": "-1.56px",
+        "color": "rgb(23, 24, 28)"
+      }
+    ],
+    "h3": [],
+    "p": [
+      {
+        "text": "Choose deals from B2B brands you know, post in your own voice, and get",
+        "font": "Inter LP",
+        "size": "21px",
+        "weight": "400",
+        "lineHeight": "31.5px",
+        "letterSpacing": "normal",
+        "color": "rgb(67, 69, 76)"
+      },
+      {
+        "text": "Accept deals from brands you know, or bring your own onto the platform",
+        "font": "Inter LP",
+        "size": "19px",
+        "weight": "400",
+        "lineHeight": "28.5px",
+        "letterSpacing": "normal",
+        "color": "rgb(85, 87, 94)"
+      },
+      {
+        "text": "Find deals, get paid, and track your performance from one dashboard. N",
+        "font": "Inter LP",
+        "size": "19px",
+        "weight": "400",
+        "lineHeight": "normal",
+        "letterSpacing": "normal",
+        "color": "rgb(85, 87, 94)"
+      },
+      {
+        "text": "Discover brand deals that match your audience.",
+        "font": "Inter LP",
+        "size": "14px",
+        "weight": "400",
+        "lineHeight": "21px",
+        "letterSpacing": "normal",
+        "color": "rgb(139, 141, 148)"
+      }
+    ],
+    "buttons": [
+      {
+        "text": "Reject",
+        "bg": "oklab(0.999994 0.0000455678 0.0000200868 / 0.06)",
+        "color": "rgb(255, 255, 255)",
+        "radius": "14px",
+        "height": 44,
+        "padding": "10px 16px",
+        "fontSize": "14px",
+        "fontWeight": "600",
+        "border": "1px oklab(0.999994 0.0000455678 0.0000200868 / 0.25)",
+        "shadow": "none"
+      },
+      {
+        "text": "Allow",
+        "bg": "oklab(0.999994 0.0000455678 0.0000200868 / 0.06)",
+        "color": "rgb(255, 255, 255)",
+        "radius": "14px",
+        "height": 44,
+        "padding": "10px 16px",
+        "fontSize": "14px",
+        "fontWeight": "600",
+        "border": "1px oklab(0.999994 0.0000455678 0.0000200868 / 0.25)",
+        "shadow": "none"
+      }
+    ],
+    "sectionCount": 1,
+    "fontLinks": []
+  },
+  "register": {
+    "title": "Naano: B2B LinkedIn Creator Marketplace",
+    "body": {
+      "bg": "lab(100 0 0)",
+      "color": "lab(84.7652 -1.94535 -7.93337)",
+      "font": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\""
+    },
+    "fonts": [
+      "Inter  ×38",
+      "Plus Jakarta Sans  ×2",
+      "ui-sans-serif  ×1"
+    ],
+    "textColors": [
+      "lab(84.7652 -1.94535 -7.93337)  ×9",
+      "rgb(17, 24, 39)  ×6",
+      "rgb(255, 255, 255)  ×3",
+      "rgb(37, 99, 235)  ×2",
+      "rgb(100, 116, 139)  ×2",
+      "rgb(23, 24, 28)  ×1",
+      "rgb(15, 23, 42)  ×1",
+      "lab(92.0301 -2.24757 -11.6453)  ×1",
+      "lab(86.15 -4.04379 -21.0797)  ×1"
+    ],
+    "backgrounds": [
+      "rgb(255, 255, 255)  ×4",
+      "rgb(37, 99, 235)  ×1"
+    ],
+    "radii": [
+      "14px  ×3",
+      "8px  ×1"
+    ],
+    "shadows": [
+      "rgba(15, 23, 42, 0.05) 0px 2px 6px 0px  ×3"
+    ],
+    "borders": [
+      "1px rgb(229, 231, 235)  ×3"
+    ],
+    "h1": [
+      {
+        "text": "Join Naano",
+        "font": "Plus Jakarta Sans",
+        "size": "28px",
+        "weight": "800",
+        "lineHeight": "42px",
+        "letterSpacing": "-0.7px",
+        "color": "rgb(15, 23, 42)"
+      }
+    ],
+    "h2": [
+      {
+        "text": "Creators. Brands. Results.",
+        "font": "Plus Jakarta Sans",
+        "size": "30px",
+        "weight": "700",
+        "lineHeight": "36px",
+        "letterSpacing": "normal",
+        "color": "rgb(255, 255, 255)"
+      }
+    ],
+    "h3": [],
+    "p": [
+      {
+        "text": "Creators. Brands. Results.",
+        "font": "Inter",
+        "size": "15.2px",
+        "weight": "700",
+        "lineHeight": "22.8px",
+        "letterSpacing": "normal",
+        "color": "rgb(37, 99, 235)"
+      },
+      {
+        "text": "The #1 platform to run LinkedIn creator campaigns that drive real busi",
+        "font": "Inter",
+        "size": "14px",
+        "weight": "400",
+        "lineHeight": "20px",
+        "letterSpacing": "normal",
+        "color": "rgb(100, 116, 139)"
+      },
+      {
+        "text": "Already have an account? Sign in here",
+        "font": "Inter",
+        "size": "12px",
+        "weight": "400",
+        "lineHeight": "16px",
+        "letterSpacing": "normal",
+        "color": "rgb(100, 116, 139)"
+      },
+      {
+        "text": "Run LinkedIn creator campaigns that drive real business - discover cre",
+        "font": "Inter",
+        "size": "16px",
+        "weight": "400",
+        "lineHeight": "24px",
+        "letterSpacing": "normal",
+        "color": "lab(92.0301 -2.24757 -11.6453)"
+      }
+    ],
+    "buttons": [
+      {
+        "text": "Sign up with LinkedIn",
+        "bg": "rgb(255, 255, 255)",
+        "color": "rgb(17, 24, 39)",
+        "radius": "14px",
+        "height": 48,
+        "padding": "0px",
+        "fontSize": "15px",
+        "fontWeight": "600",
+        "border": "1px rgb(229, 231, 235)",
+        "shadow": "rgba(15, 23, 42, 0.05) 0px 2px 6px 0px"
+      },
+      {
+        "text": "Sign up with Google",
+        "bg": "rgb(255, 255, 255)",
+        "color": "rgb(17, 24, 39)",
+        "radius": "14px",
+        "height": 48,
+        "padding": "0px",
+        "fontSize": "15px",
+        "fontWeight": "600",
+        "border": "1px rgb(229, 231, 235)",
+        "shadow": "rgba(15, 23, 42, 0.05) 0px 2px 6px 0px"
+      },
+      {
+        "text": "Sign up with email",
+        "bg": "rgb(255, 255, 255)",
+        "color": "rgb(17, 24, 39)",
+        "radius": "14px",
+        "height": 48,
+        "padding": "0px",
+        "fontSize": "15px",
+        "fontWeight": "600",
+        "border": "1px rgb(229, 231, 235)",
+        "shadow": "rgba(15, 23, 42, 0.05) 0px 2px 6px 0px"
+      }
+    ],
+    "sectionCount": 0,
+    "fontLinks": []
+  }
+}

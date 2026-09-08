@@ -59,11 +59,11 @@ export function CreatorCard({
       )}
     >
       {/* Band */}
-      <div className="card-band relative h-[74px] bg-brand-50">
+      <div className="card-band relative h-[74px] bg-sky-100">
         {rank !== undefined && (
           <span
             aria-hidden
-            className="absolute left-3 top-1 select-none text-[40px] font-extrabold leading-none text-white/50"
+            className="absolute left-3 top-1 select-none text-[40px] font-semibold leading-none text-white/75"
           >
             {rank}
           </span>
@@ -121,8 +121,14 @@ export function CreatorCard({
         </div>
       </div>
 
-      {/* Identity */}
-      <div className="flex flex-col items-center px-5 text-center">
+      {/*
+        Identity. `relative` is load-bearing: the band above is positioned, and
+        a positioned element paints above later static content in the same
+        stacking context - so without this the avatar sits behind the band.
+        It only became visible when the band went from a soft radial wash to an
+        opaque sky gradient.
+      */}
+      <div className="relative flex flex-col items-center px-5 text-center">
         <Avatar seed={creator.avatarSeed} name={creator.name} size="lg" ring className="-mt-8" />
 
         <h3 className="mt-2.5 flex items-center gap-1 text-[15px] font-semibold tracking-[-0.01em] text-ink">

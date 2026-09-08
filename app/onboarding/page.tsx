@@ -132,7 +132,7 @@ export default function OnboardingPage() {
 
         {step === 0 && (
           <div>
-            <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-ink">
+            <h1 className="text-[26px] font-semibold tracking-[-0.042em] text-ink">
               {isCreator ? 'Tell us about you' : 'Tell us about your company'}
             </h1>
             <p className="mt-2 text-[14px] text-ink-soft">
@@ -176,7 +176,7 @@ export default function OnboardingPage() {
 
         {step === 1 && (
           <div>
-            <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-ink">
+            <h1 className="text-[26px] font-semibold tracking-[-0.042em] text-ink">
               {isCreator ? 'Who reads you?' : 'Who are your buyers?'}
             </h1>
             <p className="mt-2 text-[14px] text-ink-soft">
@@ -201,7 +201,7 @@ export default function OnboardingPage() {
 
         {step === 2 && (
           <div>
-            <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-ink">Topics and markets</h1>
+            <h1 className="text-[26px] font-semibold tracking-[-0.042em] text-ink">Topics and markets</h1>
             <p className="mt-2 text-[14px] text-ink-soft">
               Optional, but they sharpen the ranking. Topics affect relevance; markets give a small boost
               to creators based where you sell.

@@ -9,6 +9,7 @@ import { getCreator } from '@/lib/data/creators';
 import { campaignByCode } from '@/lib/tracking';
 import { useStore } from '@/lib/store';
 import { Logo } from '@/components/brand';
+import { Sky } from '@/components/marketing/sky';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/feedback';
@@ -29,7 +30,7 @@ import type { ClickEvent } from '@/lib/types';
  */
 export default function TrackedLinkPage() {
   return (
-    <Suspense fallback={<Shell><p className="text-[13px] text-white/50">Resolving link…</p></Shell>}>
+    <Suspense fallback={<Shell><p className="text-[13px] text-ink-muted">Resolving link…</p></Shell>}>
       <TrackedLinkInner />
     </Suspense>
   );
@@ -78,9 +79,9 @@ function TrackedLinkInner() {
   if (!hydrated || status === 'resolving') {
     return (
       <Shell>
-        <div className="flex items-center gap-3 text-[13.5px] text-white/60">
-          <span className="size-4 animate-spin rounded-full border-2 border-white/20 border-t-white/70" />
-          Resolving <code className="font-medium text-white">{code}</code>…
+        <div className="flex items-center gap-3 text-[13.5px] text-ink-soft">
+          <span className="size-4 animate-spin rounded-full border-2 border-line border-t-ink-muted" />
+          Resolving <code className="font-medium text-ink">{code}</code>…
         </div>
       </Shell>
     );
@@ -115,7 +116,7 @@ function TrackedLinkInner() {
           Click recorded
         </div>
 
-        <h1 className="mt-4 text-[26px] font-extrabold leading-tight tracking-[-0.03em] text-white sm:text-[30px]">
+        <h1 className="mt-4 text-[26px] font-extrabold leading-tight tracking-[-0.03em] text-ink sm:text-[30px]">
           {creator ? (
             <>
               Attributed to
@@ -131,27 +132,27 @@ function TrackedLinkInner() {
           )}
         </h1>
 
-        <p className="mt-3 text-[14px] leading-relaxed text-white/55">
+        <p className="mt-3 text-[14px] leading-relaxed text-ink-soft">
           This is a real event, not a simulation — it has been written to the campaign and its
           numbers have already moved.
         </p>
 
         {/* What was captured */}
-        <div className="mt-6 overflow-hidden rounded-[16px] border border-white/12 bg-white/[0.06] backdrop-blur-md">
+        <div className="mt-6 overflow-hidden rounded-[16px] border border-line bg-surface/90 backdrop-blur-md">
           {creator && (
-            <div className="flex items-center gap-3 border-b border-white/10 p-4">
+            <div className="flex items-center gap-3 border-b border-line p-4">
               <Avatar seed={creator.avatarSeed} name={creator.name} size="sm" />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[13.5px] font-medium text-white">{creator.name}</p>
-                <p className="truncate text-[12px] text-white/45">{creator.category}</p>
+                <p className="truncate text-[13.5px] font-medium text-ink">{creator.name}</p>
+                <p className="truncate text-[12px] text-ink-muted">{creator.category}</p>
               </div>
-              <span className="rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-medium text-white/70">
+              <span className="rounded-full bg-sunken px-2.5 py-1 text-[11px] font-medium text-ink-soft">
                 Creator variant
               </span>
             </div>
           )}
 
-          <dl className="divide-y divide-white/10">
+          <dl className="divide-y divide-line">
             <Row icon={Link2} label="Code" value={code} />
             <Row icon={MonitorSmartphone} label="Device" value={event?.device ?? '—'} observed />
             <Row icon={ArrowRight} label="Referrer" value={event?.referrer ?? '—'} observed />
@@ -163,16 +164,16 @@ function TrackedLinkInner() {
           </dl>
 
           {event?.isLead && (
-            <div className="border-t border-white/10 bg-money/10 p-4">
-              <p className="text-[13px] font-semibold text-white">Qualified as a lead</p>
-              <p className="mt-0.5 text-[12.5px] text-white/60">
+            <div className="border-t border-line bg-money/10 p-4">
+              <p className="text-[13px] font-semibold text-ink">Qualified as a lead</p>
+              <p className="mt-0.5 text-[12.5px] text-ink-soft">
                 €{event.pipeline.toLocaleString('en-GB')} added to attributed pipeline.
               </p>
             </div>
           )}
         </div>
 
-        <p className="mt-4 text-[11.5px] leading-relaxed text-white/35">
+        <p className="mt-4 text-[11.5px] leading-relaxed text-ink-faint">
           Device and referrer are read from your browser. The visitor company and role are inferred —
           a production build resolves those from IP intelligence, which would be an external service.
           A real tracked link would redirect straight to {campaign.brief.landingUrl} rather than
@@ -188,14 +189,14 @@ function TrackedLinkInner() {
           </Link>
           <Link href={`/l/${code}${creatorId ? `?c=${creatorId}` : ''}`} onClick={() => window.location.reload()}>
             <Button
-              className="w-full !rounded-full border border-white/20 bg-white/5 text-white hover:bg-white/10 sm:w-auto"
+              className="w-full !rounded-full border border-line bg-surface text-ink hover:bg-sunken sm:w-auto"
             >
               Record another click
             </Button>
           </Link>
         </div>
 
-        <p className="mt-4 text-[12px] text-white/35">Returning to the campaign automatically…</p>
+        <p className="mt-4 text-[12px] text-ink-faint">Returning to the campaign automatically…</p>
       </div>
     </Shell>
   );
@@ -214,9 +215,9 @@ function Row({
 }) {
   return (
     <div className="flex items-center gap-3 p-4">
-      <Icon className="size-4 shrink-0 text-white/35" aria-hidden />
-      <dt className="text-[12.5px] text-white/45">{label}</dt>
-      <dd className="ml-auto flex items-center gap-2 text-[13px] font-medium text-white">
+      <Icon className="size-4 shrink-0 text-ink-faint" aria-hidden />
+      <dt className="text-[12.5px] text-ink-muted">{label}</dt>
+      <dd className="ml-auto flex items-center gap-2 text-[13px] font-medium text-ink">
         {value}
         {observed && (
           <span className="rounded-full bg-money/15 px-1.5 py-0.5 text-[10px] font-semibold text-money">
@@ -230,19 +231,11 @@ function Row({
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative isolate flex min-h-dvh flex-col overflow-hidden bg-[#0a0c17]">
-      <div
-        aria-hidden
-        className="absolute inset-0 -z-10"
-        style={{
-          backgroundImage:
-            'radial-gradient(60% 55% at 20% 5%, rgba(63,99,232,0.28) 0%, transparent 62%),' +
-            'radial-gradient(55% 60% at 85% 95%, rgba(11,143,95,0.20) 0%, transparent 60%)',
-        }}
-      />
+    <div className="relative isolate flex min-h-dvh flex-col overflow-hidden bg-ground">
+      <Sky />
       <header className="px-5 py-5 sm:px-8">
         <Link href="/" aria-label="Vouch home">
-          <Logo className="[&>span:last-child]:text-white" />
+          <Logo />
         </Link>
       </header>
       <main id="main" className="flex flex-1 flex-col items-center justify-center px-5 py-10 sm:px-8">
